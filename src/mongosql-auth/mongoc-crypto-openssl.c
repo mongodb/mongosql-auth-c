@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-// #include "mongoc-config.h"
+#include "mongoc-config.h"
 
 
 #include "mongoc-crypto-openssl-private.h"

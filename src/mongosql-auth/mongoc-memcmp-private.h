@@ -18,7 +18,7 @@
 #define MONGOC_MEMCMP_PRIVATE_H
 
 
-// #include "mongoc-config.h"
+#include "mongoc-config.h"
 
 /* WARNING: mongoc_memcmp() must be used to verify if two secret keys
  * are equal, in constant time.

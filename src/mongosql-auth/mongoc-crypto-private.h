@@ -15,7 +15,7 @@
  */
 
 
-// #include "mongoc-config.h"
+#include "mongoc-config.h"
 
 #ifndef MONGOC_CRYPTO_PRIVATE_H
 #define MONGOC_CRYPTO_PRIVATE_H

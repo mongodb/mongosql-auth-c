@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-// #include "mongoc-config.h"
+#include "mongoc-config.h"
 
 #include "mongoc-crypto-private.h"
 #include "mongoc-crypto-cng-private.h"

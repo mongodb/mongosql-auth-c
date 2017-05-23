@@ -19,7 +19,7 @@
 
 
 
-// #include "mongoc-config.h"
+#include "mongoc-config.h"
 
 int
 mongoc_b64_ntop (uint8_t const *src,

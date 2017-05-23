@@ -27,7 +27,7 @@
     # move source and build files into mysql repo
     rm -rf plugin/auth/mongosqld
     mkdir -p plugin/auth/mongosqld
-    cp $PROJECT_DIR/src/mongosql-auth/*.{c,h} plugin/auth/mongosqld
+    cp $PROJECT_DIR/src/mongosql-auth/*.{c,h,h.in} plugin/auth/mongosqld
     cat $PROJECT_DIR/src/CMakeLists.txt >> CMakeLists.txt
 
     # build the plugin
