@@ -1,0 +1,240 @@
+stepback: true
+command_type: system
+buildvariants:
+
+- matrix_name: full_matrix
+  display_name: "${os}"
+  matrix_spec:
+    os: "*"
+
+pre:
+  - command: shell.track
+  - func: "fetch source"
+  - func: "export variables"
+  - func: "reset testing state"
+
+post:
+  - func: "generate reports"
+  - func: "upload artifacts"
+  - command: shell.cleanup
+
+tasks:
+
+- name: build
+  commands:
+    - func: "build mongosql_auth"
+
+functions:
+
+  "build mongosql_auth":
+    command: shell.exec
+    type: test
+    params:
+      script: |
+          ${PREPARE_SHELL}
+          ${SCRIPT_DIR}/build-mongosql-auth.sh
+
+  "export variables":
+    - command: shell.exec
+      params:
+        silent: true
+        working_dir: mongosql-auth-c
+        script: |
+          if [ "Windows_NT" = "$OS" ]; then
+              set -o igncr
+          fi
+
+          export PROJECT_DIR="$(pwd)"
+          export SCRIPT_DIR="$PROJECT_DIR/test/bin"
+
+          export CURRENT_VERSION="$(git describe)"
+          if [ "${is_patch}" = "true" ]; then
+             export CURRENT_VERSION="$CURRENT_VERSION-patch-${version_id}"
+          fi
+          export GIT_SPEC="$(git rev-parse HEAD)"
+
+          export PUSH_ARCH="${push_arch}"
+          export PUSH_NAME="${push_name}"
+
+          if [ "${library_path}" != "" ]; then
+              export PATH="${library_path}:$PATH"
+          fi
+
+          export ON_EVERGREEN=true
+
+          export PROJECT_DIR="$(pwd)"
+          if [ "Windows_NT" = "$OS" ]; then
+             export PROJECT_DIR="$(cygpath -m $PROJECT_DIR)"
+          fi
+
+          # create expansions from values calculated above
+          cat <<EOT > $PROJECT_DIR/expansions.yml
+          CURRENT_VERSION: "$CURRENT_VERSION"
+          PROJECT_DIR: "$PROJECT_DIR"
+          SCRIPT_DIR: "$SCRIPT_DIR"
+          PREPARE_SHELL: |
+             if [ "Windows_NT" = "$OS" ]; then
+                 set -o igncr
+                 export SHELLOPTS
+             fi
+
+             export PROJECT_DIR="$PROJECT_DIR"
+
+             export PUSH_ARCH="$PUSH_NAME"
+             export PUSH_NAME="$PUSH_ARCH"
+
+             # env variables to be used by scripts
+             export ON_EVERGREEN="$ON_EVERGREEN"
+             export CURRENT_VERSION="$CURRENT_VERSION"
+             export GIT_SPEC="$GIT_SPEC"
+          EOT
+    - command: expansions.update
+      params:
+        file: mongosql-auth-c/expansions.yml
+
+  "fetch source":
+    - command: shell.exec
+      params:
+        silent: true
+        script: |
+          rm -rf mongosql-auth-c
+    - command: git.get_project
+      params:
+        directory: mongosql-auth-c
+    - command: git.apply_patch
+      type: test
+      params:
+        directory: mongosql-auth-c
+
+  "generate reports":
+    command: shell.exec
+    params:
+      script: |
+        ${PREPARE_SHELL}
+        ${SCRIPT_DIR}/generate-reports.sh
+
+  "reset testing state":
+    - command: shell.exec
+      params:
+        silent: true
+        script: |
+          ${killall_mci}
+    - command: shell.exec
+      params:
+        script: |
+          ${PREPARE_SHELL}
+          ${SCRIPT_DIR}/reset-testing-state.sh
+    - command: shell.exec
+      params:
+        silent: true
+        script: |
+          ${PREPARE_SHELL}
+          mv ${PROJECT_DIR}/expansions.yml ${PROJECT_DIR}/testdata/artifacts
+
+  "upload artifacts":
+    - command: s3.put
+      params:
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        local_files_include_filter:
+            - mongosql-auth-c/test/artifacts/log/*.log
+        remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/
+        content_type: text/plain
+        bucket: mciuploads
+        permissions: public-read
+        display_name: "Log File - "
+    - command: s3.put
+      params:
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        local_file: mongosql-auth-c/test/artifacts/artifacts.tar.gz
+        remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/artifacts.tar.gz
+        content_type: application/x-gzip
+        bucket: mciuploads
+        permissions: public-read
+        display_name: "All Artifacts (.tar.gz)"
+
+axes:
+
+- id: os
+  display_name: OS
+  values:
+  - id: ubuntu1404-64
+    display_name: Ubuntu 14.04
+    run_on: ubuntu1404-build
+    variables:
+      push_arch: x86_64-ubuntu1404
+      push_name: linux
+  - id: osx
+    display_name: OSX 10.10
+    run_on: osx-1010
+    variables:
+      push_arch: x86_64
+      push_name: osx
+  - id: windows
+    display_name: Windows 64
+    run_on: windows-64-vs2013-test
+    variables:
+      archive_format: zip
+      push_arch: x86_64
+      push_name: win32
+      separator: \\
+  - id: debian71
+    display_name: Debian 7.1
+    run_on: debian71-test
+    variables:
+      push_arch: x86_64-debian71
+      push_name: linux
+  - id: debian81
+    display_name: Debian 8.1 (nightly)
+    run_on: debian81-test
+    variables:
+      push_arch: x86_64-debian81
+      push_name: linux
+  - id: linux-64-amazon-ami
+    display_name: Amazon Linux (Enterprise)
+    variables:
+      push_arch: x86_64-enterprise-amzn64
+      push_name: linux
+    run_on: linux-64-amzn-build
+  - id: rhel62
+    display_name: RHEL 6.2
+    variables:
+      push_arch: x86_64-rhel62
+      push_name: linux
+    run_on: rhel62-test
+  - id: rhel70
+    display_name: RHEL 7.0
+    variables:
+      push_arch: x86_64-rhel70
+      push_name: linux
+    run_on: rhel70
+  - id: rhel-71-ppc64le
+    display_name: RHEL 7.1 PPC64LE
+    variables:
+      push_arch: ppc64le-rhel71
+      push_name: linux
+    run_on: rhel71-power8-test
+    batchtime: 1440 # 1 day
+  - id: rhel-72-s390x
+    display_name: RHEL 7.2 s390x (nightly)
+    disabled: true
+    variables:
+      push_arch: s390x-enterprise-rhel72
+      push_name: linux
+    run_on:
+    - rhel72-zseries-build
+    - rhel72-zseries-test
+    batchtime: 1440 # 1 day
+  - id: suse11-64
+    display_name: SLES 11
+    variables:
+      push_arch: x86_64-suse11
+      push_name: linux
+    run_on: suse11-test
+  - id: suse12-64
+    display_name: SLES 12
+    variables:
+      push_arch: x86_64-suse12
+      push_name: linux
+    run_on: suse12-test
