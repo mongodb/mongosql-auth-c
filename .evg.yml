@@ -4,6 +4,7 @@ buildvariants:
 
 - matrix_name: full_matrix
   display_name: "${os}"
+  tasks: ["build"]
   matrix_spec:
     os: "*"
 
