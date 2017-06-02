@@ -16,14 +16,12 @@
 
 #include "mongoc-config.h"
 
+#ifdef MONGOC_ENABLE_CRYPTO_LIBCRYPTO
 
-#include "mongoc-crypto-openssl-private.h"
+#ifndef MONGOC_CRYPTO_OPENSSL_PRIVATE_H
+#define MONGOC_CRYPTO_OPENSSL_PRIVATE_H
+
 #include "mongoc-crypto-private.h"
-
-#include <openssl/sha.h>
-#include <openssl/evp.h>
-#include <openssl/hmac.h>
-
 
 void
 mongoc_crypto_openssl_hmac_sha1 (mongoc_crypto_t *crypto,
@@ -31,49 +29,13 @@ mongoc_crypto_openssl_hmac_sha1 (mongoc_crypto_t *crypto,
                                  int key_len,
                                  const unsigned char *d,
                                  int n,
-                                 unsigned char *md /* OUT */)
-{
-   /* U1 = HMAC(input, salt + 0001) */
-   HMAC (EVP_sha1 (), key, key_len, d, n, md, NULL);
-}
+                                 unsigned char *md /* OUT */);
 
-#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
-EVP_MD_CTX *
-EVP_MD_CTX_new (void)
-{
-   return calloc (1, sizeof (EVP_MD_CTX));
-}
-
-void
-EVP_MD_CTX_free (EVP_MD_CTX *ctx)
-{
-   EVP_MD_CTX_cleanup (ctx);
-   free (ctx);
-}
-#endif
-
-bool
+my_bool
 mongoc_crypto_openssl_sha1 (mongoc_crypto_t *crypto,
                             const unsigned char *input,
                             const size_t input_len,
-                            unsigned char *output /* OUT */)
-{
-   EVP_MD_CTX *digest_ctxp = EVP_MD_CTX_new ();
-   bool rval = false;
+                            unsigned char *output /* OUT */);
 
-   if (1 != EVP_DigestInit_ex (digest_ctxp, EVP_sha1 (), NULL)) {
-      goto cleanup;
-   }
-
-   if (1 != EVP_DigestUpdate (digest_ctxp, input, input_len)) {
-      goto cleanup;
-   }
-
-   rval = (1 == EVP_DigestFinal_ex (digest_ctxp, output, NULL));
-
-cleanup:
-   EVP_MD_CTX_free (digest_ctxp);
-
-   return rval;
-}
-
+#endif /* MONGOC_CRYPTO_OPENSSL_PRIVATE_H */
+#endif /* MONGOC_ENABLE_CRYPTO_LIBCRYPTO */

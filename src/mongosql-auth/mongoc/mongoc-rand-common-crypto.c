@@ -14,51 +14,32 @@
  * limitations under the License.
  */
 
-#include "mongoc-rand.h"
+#include "mongoc-config.h"
+
+#ifdef MONGOC_ENABLE_CRYPTO_COMMON_CRYPTO
+
 #include "mongoc-rand-private.h"
 
-
-#include <windows.h>
-#include <stdio.h>
-#include <bcrypt.h>
-
-#define NT_SUCCESS(Status) (((NTSTATUS) (Status)) >= 0)
-#define STATUS_UNSUCCESSFUL ((NTSTATUS) 0xC0000001L)
+#include <Security/Security.h>
+/* rumour has it this wasn't in standard Security.h in ~10.8 */
+#include <Security/SecRandom.h>
 
 int
 _mongoc_rand_bytes (uint8_t *buf, int num)
 {
-   static BCRYPT_ALG_HANDLE algorithm = 0;
-   NTSTATUS status = 0;
-
-   if (!algorithm) {
-      status = BCryptOpenAlgorithmProvider (
-         &algorithm, BCRYPT_RNG_ALGORITHM, NULL, 0);
-      if (!NT_SUCCESS (status)) {
-         MONGOC_ERROR ("BCryptOpenAlgorithmProvider(): %d", status);
-         return 0;
-      }
-   }
-
-   status = BCryptGenRandom (algorithm, buf, num, 0);
-   if (NT_SUCCESS (status)) {
-      return 1;
-   }
-
-   MONGOC_ERROR ("BCryptGenRandom(): %d", status);
-   return 0;
+   return !SecRandomCopyBytes (kSecRandomDefault, num, buf);
 }
 
 void
 mongoc_rand_seed (const void *buf, int num)
 {
-   /* N/A - OS Does not need entropy seed */
+   /* No such thing in Common Crypto */
 }
 
 void
 mongoc_rand_add (const void *buf, int num, double entropy)
 {
-   /* N/A - OS Does not need entropy seed */
+   /* No such thing in Common Crypto */
 }
 
 int
@@ -67,3 +48,4 @@ mongoc_rand_status (void)
    return 1;
 }
 
+#endif

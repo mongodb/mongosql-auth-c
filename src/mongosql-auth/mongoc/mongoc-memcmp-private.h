@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 MongoDB, Inc.
+ * Copyright 2015 MongoDB Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,31 +14,17 @@
  * limitations under the License.
  */
 
-#include "mongoc-rand.h"
-#include "mongoc-rand-private.h"
+#ifndef MONGOC_MEMCMP_PRIVATE_H
+#define MONGOC_MEMCMP_PRIVATE_H
 
-#include <openssl/rand.h>
+#include "mongoc-misc.h"
 
+/* WARNING: mongoc_memcmp() must be used to verify if two secret keys
+ * are equal, in constant time.
+ * It returns 0 if the keys are equal, and -1 if they differ.
+ * This function is not designed for lexicographical comparisons.
+ */
 int
-_mongoc_rand_bytes (uint8_t *buf, int num)
-{
-   return RAND_bytes (buf, num);
-}
+mongoc_memcmp (const void *const b1_, const void *const b2_, size_t len);
 
-void
-mongoc_rand_seed (const void *buf, int num)
-{
-   RAND_seed (buf, num);
-}
-
-void
-mongoc_rand_add (const void *buf, int num, double entropy)
-{
-   RAND_add (buf, num, entropy);
-}
-
-int
-mongoc_rand_status (void)
-{
-   return RAND_status ();
-}
+#endif /* MONGOC_MEMCMP_PRIVATE_H */

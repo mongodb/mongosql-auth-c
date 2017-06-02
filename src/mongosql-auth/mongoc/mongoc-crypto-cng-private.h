@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-#ifndef MONGOC_CRYPTO_CNG_H
-#define MONGOC_CRYPTO_CNG_H
+#include "mongoc-config.h"
 
-BSON_BEGIN_DECLS
+#ifdef MONGOC_ENABLE_CRYPTO_CNG
 
-MONGOC_EXPORT (void)
+#ifndef MONGOC_CRYPTO_CNG_PRIVATE_H
+#define MONGOC_CRYPTO_CNG_PRIVATE_H
+
+void
 mongoc_crypto_cng_hmac_sha1 (mongoc_crypto_t *crypto,
                              const void *key,
                              int key_len,
@@ -27,12 +29,11 @@ mongoc_crypto_cng_hmac_sha1 (mongoc_crypto_t *crypto,
                              int n,
                              unsigned char *md /* OUT */);
 
-MONGOC_EXPORT (bool)
+my_bool
 mongoc_crypto_cng_sha1 (mongoc_crypto_t *crypto,
                         const unsigned char *input,
                         const size_t input_len,
                         unsigned char *output /* OUT */);
 
-BSON_END_DECLS
-
-#endif /* MONGOC_CRYPTO_CNG_H */
+#endif /* MONGOC_CRYPTO_CNG_PRIVATE_H */
+#endif /* MONGOC_ENABLE_CRYPTO_CNG */

@@ -40,7 +40,7 @@
  * IF IBM IS APPRISED OF THE POSSIBILITY OF SUCH DAMAGES.
  */
 
-#include "mongoc-b64-private.h"
+#include "mongoc-b64.h"
 
 #define Assert(Cond) \
    if (!(Cond))      \

@@ -17,18 +17,6 @@
 
 #include "mongoc-memcmp-private.h"
 
-#ifdef MONGOC_HAVE_WEAK_SYMBOLS
-__attribute__ ((weak)) void
-_mongoc_dummy_symbol_to_prevent_memcmp_lto (const unsigned char *b1,
-                                            const unsigned char *b2,
-                                            const size_t len)
-{
-   (void) b1;
-   (void) b2;
-   (void) len;
-}
-#endif
-
 /* See: http://doc.libsodium.org/helpers/index.html#constant-time-comparison */
 int
 mongoc_memcmp (const void *const b1_, const void *const b2_, size_t len)

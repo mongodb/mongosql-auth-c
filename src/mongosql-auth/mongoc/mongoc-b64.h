@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 MongoDB Inc.
+ * Copyright 2014 MongoDB Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,21 @@
  * limitations under the License.
  */
 
-#ifndef MONGOC_MEMCMP_PRIVATE_H
-#define MONGOC_MEMCMP_PRIVATE_H
+#ifndef MONGOC_B64_PRIVATE_H
+#define MONGOC_B64_PRIVATE_H
 
+#include "mongoc-misc.h"
 
-#include "mongoc-config.h"
-
-/* WARNING: mongoc_memcmp() must be used to verify if two secret keys
- * are equal, in constant time.
- * It returns 0 if the keys are equal, and -1 if they differ.
- * This function is not designed for lexicographical comparisons.
- */
 int
-mongoc_memcmp (const void *const b1_, const void *const b2_, size_t len);
+mongoc_b64_ntop (uint8_t const *src,
+                 size_t srclength,
+                 char *target,
+                 size_t targsize);
 
-#endif /* MONGOC_MEMCMP_PRIVATE_H */
+void
+mongoc_b64_initialize_rmap (void);
+
+int
+mongoc_b64_pton (char const *src, uint8_t *target, size_t targsize);
+
+#endif /* MONGOC_B64_PRIVATE_H */

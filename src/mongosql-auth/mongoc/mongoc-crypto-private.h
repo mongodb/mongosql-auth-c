@@ -15,13 +15,12 @@
  */
 
 
+#include <stdlib.h>
+#include <my_global.h>
 #include "mongoc-config.h"
 
 #ifndef MONGOC_CRYPTO_PRIVATE_H
 #define MONGOC_CRYPTO_PRIVATE_H
-
-
-BSON_BEGIN_DECLS
 
 typedef struct _mongoc_crypto_t mongoc_crypto_t;
 
@@ -55,6 +54,4 @@ mongoc_crypto_sha1 (mongoc_crypto_t *crypto,
                     const size_t input_len,
                     unsigned char *output /* OUT */);
 
-
-BSON_END_DECLS
 #endif /* MONGOC_CRYPTO_PRIVATE_H */

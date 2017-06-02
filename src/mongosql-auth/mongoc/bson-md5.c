@@ -56,12 +56,7 @@
  * specified in libbson.
  */
 
-//#include "bson-compat.h"
-
-#include <string.h>
-
-#include "bson-md5.h"
-
+#include "bson-md5-private.h"
 
 #undef BYTE_ORDER /* 1 = big-endian, -1 = little-endian, 0 = unknown */
 #if BSON_BYTE_ORDER == BSON_BIG_ENDIAN

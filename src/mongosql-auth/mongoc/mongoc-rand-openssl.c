@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 MongoDB Inc.
+ * Copyright 2016 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,36 @@
  * limitations under the License.
  */
 
-#ifndef MONGOC_B64_PRIVATE_H
-#define MONGOC_B64_PRIVATE_H
-
-
-
 #include "mongoc-config.h"
 
+#ifdef MONGOC_ENABLE_CRYPTO_LIBCRYPTO
+
+#include "mongoc-rand-private.h"
+
+#include <openssl/rand.h>
+
 int
-mongoc_b64_ntop (uint8_t const *src,
-                 size_t srclength,
-                 char *target,
-                 size_t targsize);
+_mongoc_rand_bytes (uint8_t *buf, int num)
+{
+   return RAND_bytes (buf, num);
+}
 
 void
-mongoc_b64_initialize_rmap (void);
+mongoc_rand_seed (const void *buf, int num)
+{
+   RAND_seed (buf, num);
+}
+
+void
+mongoc_rand_add (const void *buf, int num, double entropy)
+{
+   RAND_add (buf, num, entropy);
+}
 
 int
-mongoc_b64_pton (char const *src, uint8_t *target, size_t targsize);
+mongoc_rand_status (void)
+{
+   return RAND_status ();
+}
 
-#endif /* MONGOC_B64_PRIVATE_H */
+#endif

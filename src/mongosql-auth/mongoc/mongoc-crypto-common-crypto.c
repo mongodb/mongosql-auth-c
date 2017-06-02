@@ -1,5 +1,4 @@
-/*
- * Copyright 2016 MongoDB, Inc.
+/* Copyright 2016 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +13,15 @@
  * limitations under the License.
  */
 
+#include "mongoc-config.h"
 
-#ifndef MONGOC_CRYPTO_COMMON_CRYPTO_PRIVATE_H
-#define MONGOC_CRYPTO_COMMON_CRYPTO_PRIVATE_H
+#ifdef MONGOC_ENABLE_CRYPTO_COMMON_CRYPTO
 
+#include "mongoc-crypto-private.h"
+#include "mongoc-crypto-common-crypto-private.h"
+#include <CommonCrypto/CommonHMAC.h>
+#include <CommonCrypto/CommonDigest.h>
 
-BSON_BEGIN_DECLS
 
 void
 mongoc_crypto_common_crypto_hmac_sha1 (mongoc_crypto_t *crypto,
@@ -27,14 +29,23 @@ mongoc_crypto_common_crypto_hmac_sha1 (mongoc_crypto_t *crypto,
                                        int key_len,
                                        const unsigned char *d,
                                        int n,
-                                       unsigned char *md /* OUT */);
+                                       unsigned char *md /* OUT */)
+{
+   /* U1 = HMAC(input, salt + 0001) */
+   CCHmac (kCCHmacAlgSHA1, key, key_len, d, n, md);
+}
 
 my_bool
 mongoc_crypto_common_crypto_sha1 (mongoc_crypto_t *crypto,
                                   const unsigned char *input,
                                   const size_t input_len,
-                                  unsigned char *output /* OUT */);
+                                  unsigned char *output /* OUT */)
+{
+   if (CC_SHA1 (input, input_len, output)) {
+      return TRUE;
+   }
+   return FALSE;
+}
 
-BSON_END_DECLS
 
-#endif /* MONGOC_CRYPTO_COMMON_CRYPTO_PRIVATE_H */
+#endif

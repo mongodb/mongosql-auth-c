@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-#ifndef MONGOC_RAND_H
-#define MONGOC_RAND_H
+#ifndef MONGOC_RAND_PRIVATE_H
+#define MONGOC_RAND_PRIVATE_H
 
+#include "mongoc-misc.h"
 
-MONGOC_EXPORT (void)
+void
 mongoc_rand_seed (const void *buf, int num);
-MONGOC_EXPORT (void)
+void
 mongoc_rand_add (const void *buf, int num, double entropy);
-MONGOC_EXPORT (int)
+int
 mongoc_rand_status (void);
+int
+_mongoc_rand_bytes (uint8_t *buf, int num);
 
-
-#endif /* MONGOC_RAND_H */
+#endif /* MONGOC_RAND_PRIVATE_H */

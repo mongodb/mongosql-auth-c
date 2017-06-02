@@ -1,17 +1,29 @@
 
 scripts_dir="$(cd "$(dirname $0)" && pwd -P)"
+basename=${0##*/}
+
 PROJECT_DIR="${PROJECT_DIR:-$(dirname "$(dirname $scripts_dir)")}"
 ARTIFACTS_DIR="$PROJECT_DIR/test/artifacts"
+LOG_FILE="$ARTIFACTS_DIR/log/${basename%.sh}.log"
 
-if [ "$ON_EVERGREEN" != "true" ]; then
-    CURRENT_VERSION="$(git describe --always)"
-    GIT_SPEC="$(git rev-parse HEAD)"
-    PUSH_ARCH="x86_64-ubuntu1404"
-    PUSH_NAME="linux"
+CMAKE_ARGS="-DDOWNLOAD_BOOST=1 -DWITH_BOOST=$ARTIFACTS_DIR/boost"
+platform="$(uname)"
+if [ "Linux" = "$platform" ]; then
+    CMAKE_ARGS="$CMAKE_ARGS -DWITH_SSL=system"
 fi
 
-basename=${0##*/}
-LOG_FILE="$ARTIFACTS_DIR/log/${basename%.sh}.log"
+if [ "Windows_NT" = "$OS" ]; then
+    cmake_path='/cygdrive/c/cmake/bin'
+    bison_path="/cygdrive/c/bison/bin"
+    export PATH="$PATH:$cmake_path:$bison_path"
+    BUILD='MSBuild.exe MySQL.sln'
+    PLUGIN_LIBRARY="$ARTIFACTS_DIR/mysql-server/bld/Debug/mongosql_auth.dll"
+    UNIT_TESTS="$ARTIFACTS_DIR/mysql-server/bld/Debug/mongosql_auth_unit_tests.exe"
+else
+    BUILD="make mongosql_auth mongosql_auth_unit_tests"
+    PLUGIN_LIBRARY="$ARTIFACTS_DIR/mysql-server/bld/mongosql_auth.so"
+    UNIT_TESTS="$ARTIFACTS_DIR/mysql-server/bld/mongosql_auth_unit_tests"
+fi
 
 print_exit_msg() {
     exit_code=$?

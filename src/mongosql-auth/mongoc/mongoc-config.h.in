@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 MongoDB, Inc.
+ * Copyright 2013 MongoDB Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,25 @@
  * limitations under the License.
  */
 
-#ifdef __cplusplus
-#define BSON_BEGIN_DECLS extern "C" {
-#define BSON_END_DECLS }
-#else
-#define BSON_BEGIN_DECLS
-#define BSON_END_DECLS
+#ifndef MONGOC_CONFIG_H
+#define MONGOC_CONFIG_H
+
+#define MONGOC_ENABLE_CRYPTO_CNG @MONGOC_ENABLE_CRYPTO_CNG@
+
+#if MONGOC_ENABLE_CRYPTO_CNG != 1
+#  undef MONGOC_ENABLE_CRYPTO_CNG
 #endif
 
-#ifndef BSON_H
-#define BSON_H
+#define MONGOC_ENABLE_CRYPTO_COMMON_CRYPTO @MONGOC_ENABLE_CRYPTO_COMMON_CRYPTO@
 
-typedef struct {
-   uint32_t domain;
-   uint32_t code;
-   char message[504];
-} bson_error_t;
+#if MONGOC_ENABLE_CRYPTO_COMMON_CRYPTO != 1
+#  undef MONGOC_ENABLE_CRYPTO_COMMON_CRYPTO
+#endif
 
-#endif /* BSON_H */
+#define MONGOC_ENABLE_CRYPTO_LIBCRYPTO @MONGOC_ENABLE_CRYPTO_LIBCRYPTO@
+
+#if MONGOC_ENABLE_CRYPTO_LIBCRYPTO != 1
+#  undef MONGOC_ENABLE_CRYPTO_LIBCRYPTO
+#endif
+
+#endif /* MONGOC_CONFIG_H */

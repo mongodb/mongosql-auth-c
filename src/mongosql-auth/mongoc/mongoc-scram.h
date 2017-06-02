@@ -15,15 +15,11 @@
  */
 
 
-#ifndef MONGOC_SCRAM_PRIVATE_H
-#define MONGOC_SCRAM_PRIVATE_H
+#ifndef MONGOC_SCRAM_H
+#define MONGOC_SCRAM_H
 
-
-
+#include "mongoc-misc.h"
 #include "mongoc-crypto-private.h"
-
-
-BSON_BEGIN_DECLS
 
 #define MONGOC_SCRAM_HASH_SIZE 20
 
@@ -64,7 +60,4 @@ _mongoc_scram_step (mongoc_scram_t *scram,
                     uint32_t *outbuflen,
                     bson_error_t *error);
 
-BSON_END_DECLS
-
-
-#endif /* MONGOC_SCRAM_PRIVATE_H */
+#endif /* MONGOC_SCRAM_H */

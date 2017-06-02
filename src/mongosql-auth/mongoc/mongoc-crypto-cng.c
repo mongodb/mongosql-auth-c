@@ -15,12 +15,12 @@
 
 #include "mongoc-config.h"
 
+#ifdef MONGOC_ENABLE_CRYPTO_CNG
+
 #include "mongoc-crypto-private.h"
 #include "mongoc-crypto-cng-private.h"
-#include "mongoc-log.h"
 
 #include <windows.h>
-#include <stdio.h>
 #include <bcrypt.h>
 
 #define NT_SUCCESS(Status) (((NTSTATUS) (Status)) >= 0)
@@ -51,7 +51,6 @@ _mongoc_crypto_cng_hmac_or_hash (BCRYPT_ALG_HANDLE algorithm,
                                0);
 
    if (!NT_SUCCESS (status)) {
-      MONGOC_ERROR ("BCryptGetProperty(): OBJECT_LENGTH %x", status);
       return FALSE;
    }
 
@@ -63,7 +62,6 @@ _mongoc_crypto_cng_hmac_or_hash (BCRYPT_ALG_HANDLE algorithm,
                                0);
 
    if (!NT_SUCCESS (status)) {
-      MONGOC_ERROR ("BCryptGetProperty(): HASH_LENGTH %x", status);
       return FALSE;
    }
 
@@ -78,19 +76,16 @@ _mongoc_crypto_cng_hmac_or_hash (BCRYPT_ALG_HANDLE algorithm,
                               0);
 
    if (!NT_SUCCESS (status)) {
-      MONGOC_ERROR ("BCryptCreateHash(): %x", status);
       goto cleanup;
    }
 
    status = BCryptHashData (hash, data, (ULONG) data_length, 0);
    if (!NT_SUCCESS (status)) {
-      MONGOC_ERROR ("BCryptHashData(): %x", status);
       goto cleanup;
    }
 
    status = BCryptFinishHash (hash, mac_out, mac_length, 0);
    if (!NT_SUCCESS (status)) {
-      MONGOC_ERROR ("BCryptFinishHash(): %x", status);
       goto cleanup;
    }
 
@@ -120,7 +115,6 @@ mongoc_crypto_cng_hmac_sha1 (mongoc_crypto_t *crypto,
       status = BCryptOpenAlgorithmProvider (
          &algorithm, BCRYPT_SHA1_ALGORITHM, NULL, BCRYPT_ALG_HANDLE_HMAC_FLAG);
       if (!NT_SUCCESS (status)) {
-         MONGOC_ERROR ("BCryptOpenAlgorithmProvider(): %x", status);
          return;
       }
    }
@@ -128,7 +122,7 @@ mongoc_crypto_cng_hmac_sha1 (mongoc_crypto_t *crypto,
    _mongoc_crypto_cng_hmac_or_hash (algorithm, key, key_len, d, n, md);
 }
 
-bool
+my_bool
 mongoc_crypto_cng_sha1 (mongoc_crypto_t *crypto,
                         const unsigned char *input,
                         const size_t input_len,
@@ -141,8 +135,7 @@ mongoc_crypto_cng_sha1 (mongoc_crypto_t *crypto,
       status = BCryptOpenAlgorithmProvider (
          &algorithm, BCRYPT_SHA1_ALGORITHM, NULL, 0);
       if (!NT_SUCCESS (status)) {
-         MONGOC_ERROR ("BCryptOpenAlgorithmProvider(): %x", status);
-         return false;
+         return FALSE;
       }
    }
 

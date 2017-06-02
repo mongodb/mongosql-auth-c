@@ -15,16 +15,11 @@
 
 #include "mongoc-config.h"
 
-#include <string.h>
-
-#include "bson.c"
-
-#include "mongoc-rand.c"
 #include "mongoc-scram.h"
-#include "mongoc-crypto.c"
-#include "mongoc-b64.c"
-
-#include "mongoc-memcmp.c"
+#include "mongoc-rand-private.h"
+#include "mongoc-crypto-private.h"
+#include "mongoc-b64.h"
+#include "mongoc-memcmp-private.h"
 
 #define MONGOC_SCRAM_SERVER_KEY "Server Key"
 #define MONGOC_SCRAM_CLIENT_KEY "Client Key"
@@ -131,11 +126,6 @@ _mongoc_scram_start (mongoc_scram_t *scram,
    uint8_t nonce[24];
    const char *ptr;
    my_bool rval = TRUE;
-
-   
-   
-   
-   
 
    /* auth message is as big as the outbuf just because */
    scram->auth_message = (uint8_t *) malloc (outbufmax);
@@ -397,11 +387,6 @@ _mongoc_scram_step2 (mongoc_scram_t *scram,
 
    int iterations;
 
-   
-   
-   
-   
-
    /* all our passwords go through md5 thanks to MONGODB-CR */
    tmp = bson_strdup_printf ("%s:mongo:%s", scram->user, scram->pass);
    hashed_password = _mongoc_hex_md5 (tmp);
@@ -424,8 +409,6 @@ _mongoc_scram_step2 (mongoc_scram_t *scram,
                                  &scram->auth_messagelen)) {
       goto BUFFER_AUTH;
    }
-
-   fprintf(stderr, "step2 inbuf: '%s' (len %d)\n", inbuf, inbuflen);
 
    for (ptr = inbuf; ptr < inbuf + inbuflen;) {
       switch (*ptr) {
@@ -685,11 +668,6 @@ _mongoc_scram_step3 (mongoc_scram_t *scram,
 
    my_bool rval = TRUE;
 
-   
-   
-   
-   
-
    for (ptr = inbuf; ptr < inbuf + inbuflen;) {
       switch (*ptr) {
       case 'e':
@@ -793,11 +771,6 @@ _mongoc_scram_step (mongoc_scram_t *scram,
                     uint32_t *outbuflen,
                     bson_error_t *error)
 {
-   
-   
-   
-   
-
    scram->step++;
 
    switch (scram->step) {

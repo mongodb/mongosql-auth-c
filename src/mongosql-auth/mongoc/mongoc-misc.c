@@ -1,5 +1,6 @@
 
-#include "bson-md5.c"
+#include "mongoc-misc.h"
+#include "bson-md5-private.h"
 
 int64_t
 bson_ascii_strtoll (const char *s, char **e, int base)
