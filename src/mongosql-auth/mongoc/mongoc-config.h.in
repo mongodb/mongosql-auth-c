@@ -35,4 +35,16 @@
 #  undef MONGOC_ENABLE_CRYPTO_LIBCRYPTO
 #endif
 
+
+#define MONGOC_DEBUG @MONGOC_DEBUG@
+#if MONGOC_DEBUG != 1
+#  undef MONGOC_DEBUG
+#endif
+
+#ifdef MONGOC_DEBUG
+#define MONGOC_LOG(format, ...) fprintf(stderr, "[MONGOC] " format"\n", __VA_ARGS__)
+#else
+#define MONGOC_LOG(format, ...)
+#endif
+
 #endif /* MONGOC_CONFIG_H */

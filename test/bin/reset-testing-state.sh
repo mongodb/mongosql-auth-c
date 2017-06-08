@@ -27,7 +27,7 @@
     echo "done cleaning up repo"
 
     echo "setting up repo for testing..."
-    mkdir -p $ARTIFACTS_DIR/{out,log}
+    mkdir -p $ARTIFACTS_DIR/{out,log,sqlproxy}
     echo "done setting up repo for testing"
 
     exit 0

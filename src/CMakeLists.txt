@@ -22,15 +22,24 @@ ELSE()
   set(SSL_LIBS ${OPENSSL_LIBRARIES})
 ENDIF()
 
-MYSQL_ADD_PLUGIN(mongosql_auth ../plugin/auth/mongosql-auth/mongosql-auth-plugin.c
-  MODULE_ONLY TEST_ONLY)
+set (PLUGIN_SOURCE_FILES
+    ../plugin/auth/mongosql-auth/mongosql-auth-plugin.c
+    ../plugin/auth/mongosql-auth/mongosql-auth.c
+    ../plugin/auth/mongosql-auth/mongosql-auth-conversation.c
+)
+MYSQL_ADD_PLUGIN(mongosql_auth ${PLUGIN_SOURCE_FILES} MODULE_ONLY TEST_ONLY)
 
 configure_file (
   "${PROJECT_SOURCE_DIR}/plugin/auth/mongosql-auth/mongoc/mongoc-config.h.in"
   "${PROJECT_SOURCE_DIR}/plugin/auth/mongosql-auth/mongoc/mongoc-config.h"
 )
 
-add_library(mongoc
+configure_file (
+  "${PROJECT_SOURCE_DIR}/plugin/auth/mongosql-auth/mongosql-auth-config.h.in"
+  "${PROJECT_SOURCE_DIR}/plugin/auth/mongosql-auth/mongosql-auth-config.h"
+)
+
+set (MONGOC_SOURCE_FILES
     ../plugin/auth/mongosql-auth/mongoc/bson-md5.c
     ../plugin/auth/mongosql-auth/mongoc/mongoc-misc.c
     ../plugin/auth/mongosql-auth/mongoc/mongoc-b64.c
@@ -44,6 +53,8 @@ add_library(mongoc
     ../plugin/auth/mongosql-auth/mongoc/mongoc-rand-openssl.c
     ../plugin/auth/mongosql-auth/mongoc/mongoc-scram.c
 )
+
+add_library(mongoc ${MONGOC_SOURCE_FILES})
 target_link_libraries(mongoc ${SSL_LIBS})
 
 IF(UNIX)

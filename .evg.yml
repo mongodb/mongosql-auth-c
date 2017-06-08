@@ -15,7 +15,8 @@ pre:
   - func: "reset testing state"
 
 post:
-# - func: "upload artifacts"
+  - func: "generate reports"
+  #- func: "upload artifacts"
   - command: shell.cleanup
 
 tasks:
@@ -25,6 +26,8 @@ tasks:
   commands:
     - func: "install dependencies"
     - func: "build mongosql_auth"
+      vars:
+        release: true
 
 - name: unit_tests
   exec_timeout_secs: 14400 # 4h
@@ -32,6 +35,15 @@ tasks:
     - func: "install dependencies"
     - func: "build mongosql_auth"
     - func: "run unit tests"
+
+- name: integration_tests
+  exec_timeout_secs: 14400 # 4h
+  commands:
+    - func: "install dependencies"
+    - func: "start mongosqld"
+    - func: "start mongo-orchestration"
+    - func: "build mongosql_auth"
+    - func: "run integration tests"
 
 functions:
 
@@ -41,6 +53,7 @@ functions:
     params:
       script: |
           ${PREPARE_SHELL}
+          export RELEASE='${release}'
           ${SCRIPT_DIR}/build-mongosql-auth.sh
 
   "export variables":
@@ -53,54 +66,25 @@ functions:
               set -o igncr
           fi
 
-          export PROJECT_DIR="$(pwd)"
-          export SCRIPT_DIR="$PROJECT_DIR/test/bin"
-
-          export CURRENT_VERSION="$(git describe --always)"
-          if [ "${is_patch}" = "true" ]; then
-             export CURRENT_VERSION="$CURRENT_VERSION-patch-${version_id}"
-          fi
-          export GIT_SPEC="$(git rev-parse HEAD)"
-
-          export PUSH_ARCH="${push_arch}"
-          export PUSH_NAME="${push_name}"
-
-          export PATH="${cmake_path}:$PATH"
-
-          export ON_EVERGREEN=true
+          export VARIANT="${variant|other}"
 
           export PROJECT_DIR="$(pwd)"
           if [ "Windows_NT" = "$OS" ]; then
              export PROJECT_DIR="$(cygpath -m $PROJECT_DIR)"
           fi
 
-          if [ "${cc}" != "" ]; then
-            export CC="${cc}"
-          fi
+          export SCRIPT_DIR="$PROJECT_DIR/test/bin"
 
           # create expansions from values calculated above
           cat <<EOT > $PROJECT_DIR/expansions.yml
-          CURRENT_VERSION: "$CURRENT_VERSION"
-          PROJECT_DIR: "$PROJECT_DIR"
           SCRIPT_DIR: "$SCRIPT_DIR"
           PREPARE_SHELL: |
              if [ "Windows_NT" = "$OS" ]; then
                  set -o igncr
                  export SHELLOPTS
              fi
-
+             export VARIANT="$VARIANT"
              export PROJECT_DIR="$PROJECT_DIR"
-
-             export PUSH_ARCH="$PUSH_NAME"
-             export PUSH_NAME="$PUSH_ARCH"
-
-             # env variables to be used by scripts
-             export ON_EVERGREEN="$ON_EVERGREEN"
-             export CURRENT_VERSION="$CURRENT_VERSION"
-             export GIT_SPEC="$GIT_SPEC"
-
-             export PATH="$PATH"
-             export CC="$CC"
           EOT
     - command: expansions.update
       params:
@@ -120,6 +104,13 @@ functions:
       params:
         directory: mongosql-auth-c
 
+  "generate reports":
+    command: shell.exec
+    params:
+      script: |
+        ${PREPARE_SHELL}
+        ${SCRIPT_DIR}/generate-reports.sh
+
   "install dependencies":
     command: shell.exec
     params:
@@ -138,18 +129,40 @@ functions:
         script: |
           ${PREPARE_SHELL}
           ${SCRIPT_DIR}/reset-testing-state.sh
+
+  "run integration tests":
     - command: shell.exec
+      type: test
       params:
-        silent: true
         script: |
-          mv ${PROJECT_DIR}/expansions.yml ${PROJECT_DIR}/test/artifacts
+          ${PREPARE_SHELL}
+          ${SCRIPT_DIR}/run-integration-tests.sh
 
   "run unit tests":
     - command: shell.exec
+      type: test
       params:
         script: |
           ${PREPARE_SHELL}
           ${SCRIPT_DIR}/run-unit-tests.sh
+
+  "start mongo-orchestration":
+    - command: shell.exec
+      params:
+        script: |
+          ${PREPARE_SHELL}
+          ${SCRIPT_DIR}/start-orchestration.sh
+
+  "start mongosqld":
+    - command: shell.exec
+      params:
+        script: |
+          ${PREPARE_SHELL}
+          export EVG_USER=${evg_user}
+          export EVG_KEY=${evg_key}
+          export AWS_ACCESS_KEY_ID=${aws_key}
+          export AWS_SECRET_ACCESS_KEY=${aws_secret}
+          ${SCRIPT_DIR}/start-sqlproxy.sh
 
   "upload artifacts":
     - command: s3.put
@@ -157,23 +170,12 @@ functions:
         aws_key: ${aws_key}
         aws_secret: ${aws_secret}
         local_files_include_filter:
-            - mongosql-auth-c/test/artifacts/log/*.log
+            - mongosql-auth-c/test/artifacts/log/*
         remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/
         content_type: text/plain
         bucket: mciuploads
         permissions: public-read
         display_name: "Log File - "
-    - command: s3.put
-      params:
-        aws_key: ${aws_key}
-        aws_secret: ${aws_secret}
-        local_files_include_filter:
-            - mongosql-auth-c/test/artifacts/out/mongosql_auth.*
-        remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/
-        content_type: application/octet-stream
-        bucket: mciuploads
-        permissions: public-read
-        display_name: "Plugin - "
 
 axes:
 
@@ -184,106 +186,72 @@ axes:
     display_name: Ubuntu 14.04
     run_on: ubuntu1404-build
     variables:
-      push_arch: x86_64-ubuntu1404
-      push_name: linux
-      cmake_path: /opt/cmake/bin
-      cc: /opt/mongodbtoolchain/v2/bin/clang
-  - id: osx
-    display_name: OSX 10.10
-    run_on: osx-1010
+      variant: ubuntu1404-64
+  - id: rhel70
+    display_name: RHEL 7.0
     variables:
-      push_arch: x86_64
-      push_name: osx
-      cmake_path: /Applications/Cmake.app/Contents/bin
-  - id: windows
-    display_name: Windows 64
+      variant: rhel70
+    run_on: rhel70
+  - id: osx
+    display_name: OSX 10.12
+    run_on: macos-1012
+    variables:
+      variant: osx
+  - id: windows-vs2015
+    display_name: Windows 64 (VS2015)
     run_on: windows-64-vs2015-compile
     variables:
-      archive_format: zip
-      push_arch: x86_64
-      push_name: win32
-      separator: \\
-      cmake_path: /cygdrive/c/cmake/bin
+      variant: windows-vs2015
+
+- id: os-disabled
+  display_name: Disabled OSes
+  values:
+  - id: windows-vs2013
+    display_name: Windows 64 (VS2013)
+    run_on: windows-64-vs2013-compile
+    variables:
+      variant: windows-vs2013
   - id: debian71
     display_name: Debian 7.1
     run_on: debian71-test
-    disabled: true
     variables:
-      push_arch: x86_64-debian71
-      push_name: linux
-      cmake_path: /opt/mongodbtoolchain/v2/lib/cmake
-      cc: /opt/mongodbtoolchain/v2/bin/clang
+      variant: debian71
   - id: debian81
     display_name: Debian 8.1 (nightly)
     run_on: debian81-test
-    disabled: true
     variables:
-      push_arch: x86_64-debian81
-      push_name: linux
-      cmake_path: /opt/mongodbtoolchain/v2/lib/cmake
-      cc: /opt/mongodbtoolchain/v2/bin/clang
+      variant: debian81
   - id: linux-64-amazon-ami
     display_name: Amazon Linux (Enterprise)
-    disabled: true
     variables:
-      push_arch: x86_64-enterprise-amzn64
-      push_name: linux
-      cmake_path: /opt/mongodbtoolchain/v2/lib/cmake
-      cc: /opt/mongodbtoolchain/v2/bin/clang
+      variant: amazon
     run_on: linux-64-amzn-build
   - id: rhel62
     display_name: RHEL 6.2
-    disabled: true
     variables:
-      push_arch: x86_64-rhel62
-      push_name: linux
-      cmake_path: /opt/cmake/bin
+      variant: rhel62
     run_on: rhel62-test
-  - id: rhel70
-    display_name: RHEL 7.0
-    disabled: true
-    variables:
-      push_arch: x86_64-rhel70
-      push_name: linux
-      cmake_path: /opt/cmake/bin
-    run_on: rhel70
   - id: rhel-71-ppc64le
     display_name: RHEL 7.1 PPC64LE
-    disabled: true
     variables:
-      push_arch: ppc64le-rhel71
-      push_name: linux
-      cmake_path: /opt/mongodbtoolchain/v2/lib/cmake
-      cc: /opt/mongodbtoolchain/v2/bin/clang
+      variant: rhel71-ppc
     run_on: rhel71-power8-test
     batchtime: 1440 # 1 day
   - id: rhel-72-s390x
     display_name: RHEL 7.2 s390x (nightly)
-    disabled: true
     variables:
-      push_arch: s390x-enterprise-rhel72
-      push_name: linux
-      cmake_path: /opt/mongodbtoolchain/v2/lib/cmake
-      cc: /opt/mongodbtoolchain/v2/bin/clang
+      variant: rhel72-s390x
     run_on:
     - rhel72-zseries-build
     - rhel72-zseries-test
     batchtime: 1440 # 1 day
   - id: suse11-64
     display_name: SLES 11
-    disabled: true
     variables:
-      push_arch: x86_64-suse11
-      push_name: linux
-      cmake_path: /opt/mongodbtoolchain/v2/lib/cmake
-      cc: /opt/mongodbtoolchain/v2/bin/clang
+      variant: suse11
     run_on: suse11-test
   - id: suse12-64
     display_name: SLES 12
-    disabled: true
     variables:
-      push_arch: x86_64-suse12
-      push_name: linux
-      cmake_path: /opt/mongodbtoolchain/v2/lib/cmake
-      cc: /opt/mongodbtoolchain/v2/bin/clang
+      variant: suse12
     run_on: suse12-test

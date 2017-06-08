@@ -17,12 +17,9 @@
 #include <mysql/plugin_auth.h>
 #include <mysql/client_plugin.h>
 #include <mysql/service_my_plugin_log.h>
-
-#include "mongosql-auth-plugin.h"
-#include "mongoc/mongoc-b64.h"
-#include "mongoc/mongoc-scram.h"
-
-#define MAX_MECHANISM_LENGTH 1024
+#include <mysql.h>
+#include "mongosql-auth-config.h"
+#include "mongosql-auth.h"
 
 /**
   Authenticate the client using the MongoDB MySQL Authentication Plugin Protocol.
@@ -36,15 +33,29 @@
 */
 static int mongosql_auth(MYSQL_PLUGIN_VIO *vio, MYSQL *mysql)
 {
-    return CR_OK;
-}
+    mongosql_auth_t plugin;
+    int status;
 
-int auth_scram(MYSQL_PLUGIN_VIO *vio, MYSQL *mysql, uint32_t num_conversations) {
-    return CR_OK;
-}
+    _mongosql_auth_init(&plugin, vio, mysql->user, mysql->passwd);
+    _mongosql_auth_start(&plugin);
 
-int auth_plain(MYSQL_PLUGIN_VIO *vio, MYSQL *mysql, uint32_t num_conversations) {
-    return CR_OK;
+    while (!_mongosql_auth_is_done(&plugin)) {
+        _mongosql_auth_step(&plugin);
+        _mongosql_auth_write_payload(&plugin);
+        _mongosql_auth_read_payload(&plugin);
+    }
+
+    status = plugin.status;
+    if (status == CR_OK) {
+        MONGOSQL_AUTH_LOG("%s", "Authentication finished successfully");
+    } else {
+        MONGOSQL_AUTH_LOG("%s", "Authentication was unsuccessful");
+        MONGOSQL_AUTH_LOG("Error message: '%s'", plugin.error_msg);
+    }
+
+    _mongosql_auth_destroy(&plugin);
+
+    return status;
 }
 
 mysql_declare_client_plugin(AUTHENTICATION)

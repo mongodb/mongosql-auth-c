@@ -51,6 +51,7 @@ _mongoc_crypto_cng_hmac_or_hash (BCRYPT_ALG_HANDLE algorithm,
                                0);
 
    if (!NT_SUCCESS (status)) {
+      MONGOC_LOG ("BCryptGetProperty(): OBJECT_LENGTH %x", status);
       return FALSE;
    }
 
@@ -62,6 +63,7 @@ _mongoc_crypto_cng_hmac_or_hash (BCRYPT_ALG_HANDLE algorithm,
                                0);
 
    if (!NT_SUCCESS (status)) {
+      MONGOC_LOG ("BCryptGetProperty(): HASH_LENGTH %x", status);
       return FALSE;
    }
 
@@ -76,16 +78,19 @@ _mongoc_crypto_cng_hmac_or_hash (BCRYPT_ALG_HANDLE algorithm,
                               0);
 
    if (!NT_SUCCESS (status)) {
+      MONGOC_LOG ("BCryptCreateHash(): %x", status);
       goto cleanup;
    }
 
    status = BCryptHashData (hash, data, (ULONG) data_length, 0);
    if (!NT_SUCCESS (status)) {
+      MONGOC_LOG ("BCryptHashData(): %x", status);
       goto cleanup;
    }
 
    status = BCryptFinishHash (hash, mac_out, mac_length, 0);
    if (!NT_SUCCESS (status)) {
+      MONGOC_LOG ("BCryptFinishHash(): %x", status);
       goto cleanup;
    }
 
@@ -115,6 +120,7 @@ mongoc_crypto_cng_hmac_sha1 (mongoc_crypto_t *crypto,
       status = BCryptOpenAlgorithmProvider (
          &algorithm, BCRYPT_SHA1_ALGORITHM, NULL, BCRYPT_ALG_HANDLE_HMAC_FLAG);
       if (!NT_SUCCESS (status)) {
+         MONGOC_LOG ("BCryptOpenAlgorithmProvider(): %x", status);
          return;
       }
    }

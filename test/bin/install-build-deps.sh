@@ -12,7 +12,6 @@
         curl -O https://superb-sea2.dl.sourceforge.net/project/gnuwin32/bison/2.4.1/bison-2.4.1-setup.exe
         chmod +x bison-2.4.1-setup.exe
         ./bison-2.4.1-setup.exe /VERYSILENT /DIR='C:\bison'
-        cp /cygdrive/c/Program\ Files\ \(x86\)/MSBuild/14.0/Bin/MSBuild.exe /cygdrive/c/bison/bin
         echo "done installing build dependencies"
     fi
 
