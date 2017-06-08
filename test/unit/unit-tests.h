@@ -1,6 +1,3 @@
 
 int
-test_mongosql_auth_defaults();
-
-int
-test_mongosql_auth_parameters();
+test_mongosql_auth_conversation_parameters();

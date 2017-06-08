@@ -25,6 +25,8 @@
 
 typedef struct mongosql_auth_conversation_t {
     mongoc_scram_t scram;
+    char *username;
+    char *password;
     char *mechanism;
     uint8_t done;
     unsigned char buf[4096];
@@ -44,6 +46,9 @@ _mongosql_auth_conversation_step(mongosql_auth_conversation_t *conv);
 
 void
 _mongosql_auth_conversation_scram_step(mongosql_auth_conversation_t *conv);
+
+void
+_mongosql_auth_conversation_plain_step(mongosql_auth_conversation_t *conv);
 
 void
 _mongosql_auth_conversation_set_error(mongosql_auth_conversation_t *conv, const char *msg);

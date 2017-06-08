@@ -16,7 +16,7 @@ pre:
 
 post:
   - func: "generate reports"
-  #- func: "upload artifacts"
+  - func: "upload artifacts"
   - command: shell.cleanup
 
 tasks:
@@ -36,14 +36,24 @@ tasks:
     - func: "build mongosql_auth"
     - func: "run unit tests"
 
-- name: integration_tests
+- name: integration_tests_plain
+  exec_timeout_secs: 14400 # 4h
+  commands:
+    - func: "install dependencies"
+    - func: "start mongosqld"
+      vars:
+        mongodb_args: --mongo-uri=ldaptest.10gen.cc
+    - func: "build mongosql_auth"
+    - func: "run plain integration tests"
+
+- name: integration_tests_scram
   exec_timeout_secs: 14400 # 4h
   commands:
     - func: "install dependencies"
     - func: "start mongosqld"
     - func: "start mongo-orchestration"
     - func: "build mongosql_auth"
-    - func: "run integration tests"
+    - func: "run scram integration tests"
 
 functions:
 
@@ -130,13 +140,21 @@ functions:
           ${PREPARE_SHELL}
           ${SCRIPT_DIR}/reset-testing-state.sh
 
-  "run integration tests":
+  "run plain integration tests":
     - command: shell.exec
       type: test
       params:
         script: |
           ${PREPARE_SHELL}
-          ${SCRIPT_DIR}/run-integration-tests.sh
+          ${SCRIPT_DIR}/run-integration-tests-plain.sh
+
+  "run scram integration tests":
+    - command: shell.exec
+      type: test
+      params:
+        script: |
+          ${PREPARE_SHELL}
+          ${SCRIPT_DIR}/run-integration-tests-scram.sh
 
   "run unit tests":
     - command: shell.exec
@@ -162,6 +180,7 @@ functions:
           export EVG_KEY=${evg_key}
           export AWS_ACCESS_KEY_ID=${aws_key}
           export AWS_SECRET_ACCESS_KEY=${aws_secret}
+          export SQLPROXY_MONGO_ARGS=${mongodb_args}
           ${SCRIPT_DIR}/start-sqlproxy.sh
 
   "upload artifacts":
@@ -169,13 +188,102 @@ functions:
       params:
         aws_key: ${aws_key}
         aws_secret: ${aws_secret}
-        local_files_include_filter:
-            - mongosql-auth-c/test/artifacts/log/*
-        remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/
+        local_file: mongosql-auth-c/test/artifacts/out/mongosql_auth.so
+        remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/mongosql_auth.so
+        content_type: application/octet-stream
+        bucket: mciuploads
+        permissions: public-read
+        display_name: "mongosql_auth.so"
+    - command: s3.put
+      params:
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        local_file: mongosql-auth-c/test/artifacts/out/mongosql_auth.dll
+        remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/mongosql_auth.dll
+        content_type: application/octet-stream
+        bucket: mciuploads
+        permissions: public-read
+        display_name: "mongosql_auth.dll"
+    - command: s3.put
+      params:
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        local_file: mongosql-auth-c/test/artifacts/orchestration/server.log
+        remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/orchestration-server.log
         content_type: text/plain
         bucket: mciuploads
         permissions: public-read
-        display_name: "Log File - "
+        display_name: "orchestration-server.log"
+    - command: s3.put
+      params:
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        local_file: mongosql-auth-c/test/artifacts/log/install-build-deps.log
+        remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/install-build-deps.log
+        content_type: text/plain
+        bucket: mciuploads
+        permissions: public-read
+        display_name: "install-build-deps.log"
+    - command: s3.put
+      params:
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        local_file: mongosql-auth-c/test/artifacts/log/build-mongosql-auth.log
+        remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/build-mongosql-auth.log
+        content_type: text/plain
+        bucket: mciuploads
+        permissions: public-read
+        display_name: "build-mongosql-auth.log"
+    - command: s3.put
+      params:
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        local_file: mongosql-auth-c/test/artifacts/log/start-orchestration.log
+        remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/start-orchestration.log
+        content_type: text/plain
+        bucket: mciuploads
+        permissions: public-read
+        display_name: "start-orchestration.log"
+    - command: s3.put
+      params:
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        local_file: mongosql-auth-c/test/artifacts/log/start-sqlproxy.log
+        remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/start-sqlproxy.log
+        content_type: text/plain
+        bucket: mciuploads
+        permissions: public-read
+        display_name: "start-sqlproxy.log"
+    - command: s3.put
+      params:
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        local_file: mongosql-auth-c/test/artifacts/log/sqlproxy.log
+        remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/sqlproxy.log
+        content_type: text/plain
+        bucket: mciuploads
+        permissions: public-read
+        display_name: "sqlproxy.log"
+    - command: s3.put
+      params:
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        local_file: mongosql-auth-c/test/artifacts/log/run-integration-tests-plain.log
+        remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/run-integration-tests-plain.log
+        content_type: text/plain
+        bucket: mciuploads
+        permissions: public-read
+        display_name: "run-integration-tests-plain.log"
+    - command: s3.put
+      params:
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        local_file: mongosql-auth-c/test/artifacts/log/run-integration-tests-scram.log
+        remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/run-integration-tests-scram.log
+        content_type: text/plain
+        bucket: mciuploads
+        permissions: public-read
+        display_name: "run-integration-tests-scram.log"
 
 axes:
 

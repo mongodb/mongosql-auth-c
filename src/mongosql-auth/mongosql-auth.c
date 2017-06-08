@@ -21,37 +21,24 @@
 
 /* initialize the plugin state with the provided fields */
 void
-_mongosql_auth_init(mongosql_auth_t *plugin, MYSQL_PLUGIN_VIO *vio, const char *username, const char *password) {
-    char *ptr;
+_mongosql_auth_init(mongosql_auth_t *plugin, MYSQL_PLUGIN_VIO *vio) {
 
     MONGOSQL_AUTH_LOG("%s", "Initializing auth plugin");
 
     /* initialize fields with provided parameters */
-    plugin->username = strdup(username);
-    plugin->password = strdup(password);
     plugin->vio = vio;
 
     /* initialize other fields */
     plugin->status = CR_OK;
-    plugin->mechanism = NULL;
     plugin->error_msg = NULL;
     plugin->conversations = NULL;
     plugin->num_conversations = 0;
-
-    /* remove parameters from username */
-    ptr = strrchr(plugin->username, '?');
-    if(ptr != NULL) {
-        *ptr = '\0';
-    }
 }
 
 void
 _mongosql_auth_destroy(mongosql_auth_t *plugin) {
 
     /* free strduped strings */
-    free(plugin->username);
-    free(plugin->password);
-    free(plugin->mechanism);
     free(plugin->error_msg);
 
     /* call the conversation destructors */
@@ -65,11 +52,12 @@ _mongosql_auth_destroy(mongosql_auth_t *plugin) {
 
 /* execute the first steps of the conversation and update the plugin with auth data */
 void
-_mongosql_auth_start(mongosql_auth_t *plugin) {
+_mongosql_auth_start(mongosql_auth_t *plugin, const char *username, const char *password) {
     unsigned char *pkt;
     int pkt_len;
     uint8_t major_version;
     uint8_t minor_version;
+    unsigned char *mechanism;
 
     /* read auth-data */
     MONGOSQL_AUTH_LOG("%s", "Reading auth-data from server");
@@ -108,17 +96,17 @@ _mongosql_auth_start(mongosql_auth_t *plugin) {
         return;
     }
 
-    /* set the plugin's mechanism and num_conversations fields */
-    plugin->mechanism = strdup(pkt);
-    memcpy(&plugin->num_conversations, pkt+strlen((const char *)plugin->mechanism)+1, 4);
-    MONGOSQL_AUTH_LOG("    mechanism: %s", plugin->mechanism);
+    /* set the plugin's num_conversations field */
+    mechanism = pkt;
+    memcpy(&plugin->num_conversations, pkt+strlen(mechanism)+1, 4);
+    MONGOSQL_AUTH_LOG("    mechanism: %s", mechanism);
     MONGOSQL_AUTH_LOG("    num_conversations: %u", plugin->num_conversations);
 
     /* allocate and initialize conversations */
     MONGOSQL_AUTH_LOG("Initializing %d conversation structs", plugin->num_conversations);
     plugin->conversations = calloc(plugin->num_conversations, sizeof(mongosql_auth_conversation_t));
     for (unsigned int i=0; i<plugin->num_conversations; i++) {
-        _mongosql_auth_conversation_init(&plugin->conversations[i], plugin->username, plugin->password, plugin->mechanism);
+        _mongosql_auth_conversation_init(&plugin->conversations[i], username, password, mechanism);
     }
 }
 
@@ -185,6 +173,7 @@ _mongosql_auth_write_payload(mongosql_auth_t *plugin) {
 
     /* if there is an error, stop */
     if (_mongosql_auth_has_error(plugin)) {
+        MONGOSQL_AUTH_LOG("%s", "Not writing payload: error already encountered");
         return;
     }
 
@@ -248,7 +237,8 @@ _mongosql_auth_has_error(mongosql_auth_t *plugin) {
     for (unsigned int i=0; i<plugin->num_conversations; i++) {
         conv = &plugin->conversations[i];
         if (_mongosql_auth_conversation_has_error(conv)) {
-            _mongosql_auth_set_error(plugin, conv->error_msg);
+            plugin->error_msg = strdup(conv->error_msg);
+            plugin->status = CR_ERROR;
             return TRUE;
         }
     }

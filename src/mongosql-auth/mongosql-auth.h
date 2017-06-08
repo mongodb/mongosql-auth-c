@@ -24,24 +24,21 @@
 #include "mongosql-auth-conversation.h"
 
 typedef struct mongosql_auth_t {
-    char *username;
-    char *password;
-    char *mechanism;
-    uint32_t num_conversations;
-    char* error_msg;
     int status;
+    char* error_msg;
+    uint32_t num_conversations;
     mongosql_auth_conversation_t *conversations;
     MYSQL_PLUGIN_VIO *vio;
 } mongosql_auth_t;
 
 void
-_mongosql_auth_init(mongosql_auth_t *plugin, MYSQL_PLUGIN_VIO *vio, const char *username, const char *password);
+_mongosql_auth_init(mongosql_auth_t *plugin, MYSQL_PLUGIN_VIO *vio);
 
 void
 _mongosql_auth_destroy(mongosql_auth_t *plugin);
 
 void
-_mongosql_auth_start(mongosql_auth_t *plugin);
+_mongosql_auth_start(mongosql_auth_t *plugin, const char *username, const char *password);
 
 void
 _mongosql_auth_step(mongosql_auth_t *plugin);

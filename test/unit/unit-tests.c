@@ -14,54 +14,36 @@ main (int argc, char *argv[]) {
 
     int ret = 0;
 
-    ret += test_mongosql_auth_defaults();
+    ret += test_mongosql_auth_conversation_parameters();
 
     return ret;
 }
 
-int test_mongosql_auth_defaults () {
-    mongosql_auth_t plugin;
+int test_mongosql_auth_conversation_parameters () {
+    mongosql_auth_conversation_t conv;
 
-    fprintf(stderr, "Testing mongosql_auth_t constructor...");
+    fprintf(stderr, "Testing mongosql_auth_conversation_t parameter initialization...");
 
-    _mongosql_auth_init(&plugin, NULL, "username", "password");
+    _mongosql_auth_conversation_init(&conv, "username?source=mydb", "password", "scram-sha-1");
 
-    if (strcmp(plugin.username, "username")) {
+    if (strcmp(conv.username, "username")) {
         fprintf(stderr, "FAIL\n");
-        fprintf(stderr, "    expected plugin.username to be 'username', got '%s'\n", plugin.username);
+        fprintf(stderr, "    expected conv.username to be 'username', got '%s'\n", conv.username);
         return 1;
     }
 
-    if (strcmp(plugin.password, "password")) {
+    if (strcmp(conv.password, "password")) {
         fprintf(stderr, "FAIL\n");
-        fprintf(stderr, "    expected plugin.password to be 'password', got '%s'\n", plugin.password);
+        fprintf(stderr, "    expected conv.password to be 'password', got '%s'\n", conv.password);
         return 1;
     }
 
-    fprintf(stderr, "PASS\n");
-    return 0;
-}
-
-int test_mongosql_auth_parameters () {
-    mongosql_auth_t plugin;
-
-    fprintf(stderr, "Testing mongosql_auth_t parameter removal...");
-
-    _mongosql_auth_init(&plugin, NULL, "username?source=mydb", "password");
-
-    if (strcmp(plugin.username, "username")) {
+    if (strcmp(conv.mechanism, "SCRAM-SHA-1")) {
         fprintf(stderr, "FAIL\n");
-        fprintf(stderr, "    expected plugin.username to be 'username', got '%s'\n", plugin.username);
-        return 1;
-    }
-
-    if (strcmp(plugin.password, "password")) {
-        fprintf(stderr, "FAIL\n");
-        fprintf(stderr, "    expected plugin.password to be 'password', got '%s'\n", plugin.password);
+        fprintf(stderr, "    expected conv.mechanism to be 'SCRAM-SHA-1', got '%s'\n", conv.mechanism);
         return 1;
     }
 
     fprintf(stderr, "PASS\n");
     return 0;
 }
-
