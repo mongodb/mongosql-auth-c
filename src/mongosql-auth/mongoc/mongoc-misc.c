@@ -140,11 +140,56 @@ bson_set_error (bson_error_t *error, /* OUT */
       error->code = code;
 
       va_start (args, format);
-      vsnprintf (error->message, sizeof error->message, format, args);
+      bson_vsnprintf (error->message, sizeof error->message, format, args);
       va_end (args);
 
       error->message[sizeof error->message - 1] = '\0';
    }
+}
+
+int
+bson_vsnprintf (char *str,          /* IN */
+                size_t size,        /* IN */
+                const char *format, /* IN */
+                va_list ap)         /* IN */
+{
+#ifdef _MSC_VER
+   int r = -1;
+
+   if (size != 0) {
+      r = _vsnprintf_s (str, size, _TRUNCATE, format, ap);
+   }
+
+   if (r == -1) {
+      r = _vscprintf (format, ap);
+   }
+
+   str[size - 1] = '\0';
+
+   return r;
+#else
+   int r;
+
+   r = vsnprintf (str, size, format, ap);
+   str[size - 1] = '\0';
+   return r;
+#endif
+}
+
+int
+bson_snprintf (char *str,          /* IN */
+               size_t size,        /* IN */
+               const char *format, /* IN */
+               ...)
+{
+   int r;
+   va_list ap;
+
+   va_start (ap, format);
+   r = bson_vsnprintf (str, size, format, ap);
+   va_end (ap);
+
+   return r;
 }
 
 char *
@@ -160,7 +205,7 @@ bson_strdupv_printf (const char *format, /* IN */
 
    while (1) {
       va_copy (my_args, args);
-      n = vsnprintf (buf, len, format, my_args);
+      n = bson_vsnprintf (buf, len, format, my_args);
       va_end (my_args);
 
       if (n > -1 && n < len) {
@@ -205,7 +250,7 @@ _mongoc_hex_md5 (const char *input)
    bson_md5_finish (&md5, digest);
 
    for (i = 0; i < sizeof digest; i++) {
-      snprintf (&digest_str[i * 2], 3, "%02x", digest[i]);
+      bson_snprintf (&digest_str[i * 2], 3, "%02x", digest[i]);
    }
    digest_str[sizeof digest_str - 1] = '\0';
 

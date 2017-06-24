@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Fragment>
+    <FeatureGroup Id="fg_All">
+      <Feature Id="MongoSQLAuth"
+               Title="MongoSQL Authentication Plugin"
+               Description="A MySQL client authentication plugin for use with the MongoDB Connector for BI"
+               Level="1">
+
+        <Feature Id="Documentation"
+                 Title="Documentation"
+                 Description="README, LICENSE, THIRD-PARTY-NOTICES, and example DSN for the MongoSQL Authentication Plugin"
+                 Level="1"
+                 ConfigurableDirectory="AUTHPLUGINDIR">
+          <ComponentGroupRef Id="cg_Documentation" />
+        </Feature>
+
+        <Feature Id="Plugin"
+                Title="Plugin Files"
+                Description="MongoSQL Authentication Plugin"
+                Level="1"
+                ConfigurableDirectory="MYSQLHOMEDIR">
+          <Feature Id="Library"
+                  Title="Plugin Library"
+                  Description="MySQL plugin library for mongosql_auth protocol (mongosql_auth.dll)"
+                  Level="1">
+            <ComponentRef Id="c_mongosql_auth" />
+          </Feature>
+          <Feature Id="Config"
+                  Title="MySQL Configuration"
+                  Description="MySQL configuration file to make mongosql_auth the default MySQL authentication plugin"
+                  Level="1">
+            <ComponentRef Id="c_mysql_config" />
+          </Feature>
+        </Feature>
+
+      </Feature>
+    </FeatureGroup>
+  </Fragment>
+</Wix>

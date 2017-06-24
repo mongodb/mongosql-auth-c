@@ -1,0 +1,10 @@
+# this is an example DSN that illustrates the configuration options
+# needed to get a DSN working with the mongosql_auth plugin
+[ODBC]
+DRIVER=MySQL ODBC 5.3 ANSI Driver
+USER=username
+PASSWORD=password
+PORT=3307
+DATABASE=yourdatabase
+SERVER=your.hostname.here
+DEFAULT_AUTH=mongosql_auth

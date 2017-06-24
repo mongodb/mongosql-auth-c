@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Fragment>
+    <DirectoryRef Id="MYSQLPLUGINDIR">
+      <Component Id="c_mongosql_auth" Guid="c5a7610d-615a-4529-832e-26ce73606b5f">
+        <File Id="f_mongosql_auth"
+              Name="mongosql_auth.dll"
+              Source="$(var.LibraryDir)\mongosql_auth.dll"
+              DiskId ="1"
+              KeyPath="yes"/>
+      </Component>
+    </DirectoryRef>
+  </Fragment>
+</Wix>

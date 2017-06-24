@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Fragment>
+    <DirectoryRef Id="MYSQLHOMEDIR">
+      <Component Id="c_mysql_config" Guid="764acfb9-7186-40b7-bf89-ff2821b8a759" NeverOverwrite="yes">
+        <File Id="f_mysql_config"
+              Name="my.cnf"
+              Source="$(var.ResourceDir)\my.cnf"
+              DiskId ="1"
+              KeyPath="yes"/>
+      </Component>
+    </DirectoryRef>
+  </Fragment>
+</Wix>

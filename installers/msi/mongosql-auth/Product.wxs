@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Product Id="$(var.ProductId)"
+           Name="!(wix.ProductName)"
+           Language="1033"
+           Version="$(var.Version)"
+           Manufacturer="MongoDB"
+           UpgradeCode="$(var.UpgradeCode)">
+
+        <Package InstallerVersion="200" Compressed="yes" Platform="x64" />
+        <Media Id="1" Cabinet="media1.cab" EmbedCab="yes" />
+        <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+
+        <WixVariable Id="ProductName" Value="$(var.ProjectName) $(var.VersionLabel)" />
+
+        <Directory Id="TARGETDIR" Name="SourceDir">
+            <Directory Id="ProgramFiles64Folder">
+                <Directory Id="MongoDB" Name="MongoDB">
+                    <Directory Id="BIConnector" Name="Connector for BI">
+                        <Directory Id="AUTHPLUGINDIR" Name="MongoSQL Authentication Plugin" />
+                    </Directory>
+                </Directory>
+                <Directory Id="MySQL" Name="MySQL">
+                    <Directory Id="MYSQLHOMEDIR" Name="MySQL Server 5.7">
+                        <Directory Id="lib" Name="lib">
+                            <Directory Id="MYSQLPLUGINDIR" Name="plugin" />
+                        </Directory>
+                    </Directory>
+                </Directory>
+            </Directory>
+        </Directory>
+
+        <FeatureGroupRef Id="fg_All" />
+
+        <!-- UI related -->
+        <WixVariable Id="WixUIDialogBmp" Value="$(var.ResourceDir)\Dialog.bmp" />
+        <WixVariable Id="WixUIBannerBmp" Value="$(var.ResourceDir)\Banner.bmp" />
+        <WixVariable Id="WixUIInfoIco" Value="$(var.ResourceDir)\Installer_Icon_32x32.ico" />
+        <WixVariable Id="WixUIExclamationIco" Value="$(var.ResourceDir)\Installer_Icon_32x32.ico" />
+
+        <Property Id="ARPPRODUCTICON" Value="MongoDBIcon" />
+        <Property Id="ARPHELPLINK" Value="http://www.mongodb.com/" />
+        <Property Id="ARPURLINFOABOUT" Value="http://www.mongodb.com/" />
+        <Property Id="WIXUI_INSTALLDIR" Value="MYSQLHOMEDIR" />
+
+        <UIRef Id="MongoWixUI" />
+
+    </Product>
+</Wix>

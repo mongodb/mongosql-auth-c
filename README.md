@@ -1,10 +1,22 @@
 # mongosql-auth-c
 A MySQL authentication plugin that implements the client-side of MongoDB-supported authentication mechanisms for the BI Connector.
 
-Version 1.0 of this plugin will support the following mechanisms:
+Version 1.0 of this plugin supports the following mechanisms:
 
 - SCRAM-SHA-1
 - PLAIN
+
+## Supported Platforms
+
+The plugin is built and tested on the following platforms (all x86\_64):
+
+- Windows 2008 R2
+- OSX 10.12
+- Ubuntu 14.04
+- RHEL 7.0
+
+The plugin is built against MySQL 5.7.18 Community Edition (64-bit),
+and tested with MySQL 5.7.18 Community Edition and the MongoDB Connector for BI 2.2.
 
 ## Installation
 
@@ -12,7 +24,8 @@ The plugin tarball/installer can be downloaded from the [releases page](https://
 
 ### Windows
 
-Install the plugin using the msi installer provided on the releases page.
+First, download the MySQL 5.7.18 [installer](https://dev.mysql.com/downloads/file/?id=470091) and install the products you need.
+Then, install the plugin using the msi installer provided on the releases page.
 
 ### OSX and Linux
 
@@ -22,6 +35,8 @@ The default location of `<mysql home>` varies by platform, but the location of t
 Alternatively, the plugin can be installed in a directory of your choice if you provide the `plugin-dir=<your_install_dir>` option to your MySQL client.
 
 ## Usage
+
+This plugin can be used with the 64-bit version of the the MySQL shell and the MySQL ODBC driver.
 
 ### Parameters
 

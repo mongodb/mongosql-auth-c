@@ -43,6 +43,12 @@ bson_set_error (bson_error_t *error, /* OUT */
                 const char *format,  /* IN */
                 ...);                 /* IN */
 
+int
+bson_vsnprintf (char *str, size_t size, const char *format, va_list ap);
+
+int
+bson_snprintf (char *str, size_t size, const char *format, ...);
+
 char *
 bson_strdup_printf (const char *format, /* IN */
                     ...);                /* IN */

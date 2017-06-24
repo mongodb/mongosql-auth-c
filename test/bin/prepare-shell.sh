@@ -1,6 +1,10 @@
 
 . "$(dirname $0)/platforms.sh"
 
+MAJOR_VERSION=0
+MINOR_VERSION=1
+PATCH_VERSION=0
+
 export PATH="$PATH:$CMAKE_PATH:$MSBUILD_PATH"
 
 basename=${0##*/}

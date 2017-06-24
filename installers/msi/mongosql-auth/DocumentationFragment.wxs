@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Fragment>
+    <DirectoryRef Id="AUTHPLUGINDIR">
+      <Component Id="c_License" Guid="a7e36faa-c54b-44cd-9686-6094ce141d7c">
+        <File Id="f_License"
+              Name="LICENSE.txt"
+              Source="$(var.SourceDir)\LICENSE"
+              DiskId ="1"
+              KeyPath="yes" />
+      </Component>
+      <Component Id="c_Thirdparty" Guid="83b6dfe5-cd98-43ed-91e3-648bcff9ed9d">
+        <File Id="f_Thirdparty"
+              Name="THIRD-PARTY-NOTICES"
+              Source="$(var.SourceDir)\THIRD_PARTY_NOTICES"
+              DiskId ="1"
+              KeyPath="yes" />
+      </Component>
+      <Component Id="c_Readme" Guid="7fbbfbf0-11c1-4ba1-b573-46921927db32">
+        <File Id="f_Readme"
+              Name="README"
+              Source="$(var.SourceDir)\README.md"
+              DiskId ="1"
+              KeyPath="yes" />
+      </Component>
+      <Component Id="c_example_dsn" Guid="16997a3a-cb44-4a55-b4aa-a1b41e156144">
+        <File Id="f_example_dsn"
+              Name="mongosql-auth-example.dsn"
+              Source="$(var.ResourceDir)\mongosql-auth.dsn"
+              DiskId ="1"
+              KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <ComponentGroup Id="cg_Documentation">
+      <ComponentRef Id="c_Thirdparty"/>
+      <ComponentRef Id="c_Readme"/>
+      <ComponentRef Id="c_License"/>
+      <ComponentRef Id="c_example_dsn"/>
+    </ComponentGroup>
+
+    <WixVariable Id="WixUILicenseRtf" Value="$(var.ResourceDir)\LICENSE.rtf" />
+  </Fragment>
+</Wix>
