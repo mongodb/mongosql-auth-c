@@ -8,6 +8,7 @@ ubuntu1404-64)
     PUSH_NAME='linux'
     ;;
 rhel70)
+    export CC='/opt/mongodbtoolchain/v2/bin/clang'
     export SQLPROXY_BUILD_VARIANT='single_variant__os_single_variant~rhel70'
     CMAKE_PATH='/opt/cmake/bin'
     PUSH_ARCH='x86_64-rhel70'
