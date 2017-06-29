@@ -62,7 +62,7 @@ mysql_declare_client_plugin(AUTHENTICATION)
     "mongosql_auth",
     "MongoDB",
     "MongoDB MySQL Authentication Plugin",
-    {0,1,0},
+    {1,0,0},
     "Apache License, Version 2.0",
     NULL,
     NULL,
