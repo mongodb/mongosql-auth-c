@@ -4,7 +4,13 @@ buildvariants:
 
 - matrix_name: full_matrix
   display_name: "${os}"
-  tasks: ["*"]
+  tasks:
+    - name: compile
+    - name: sign
+      run_on: linux-64-amzn-build
+    - name: unit_tests
+    - name: integration_tests_plain
+    - name: integration_tests_scram
   matrix_spec:
     os: "*"
 
@@ -20,14 +26,23 @@ post:
 
 tasks:
 
-- name: dist
+- name: compile
   exec_timeout_secs: 14400 # 4h
   commands:
     - func: "install dependencies"
     - func: "build mongosql_auth"
       vars:
         release: true
-    - func: "create release"
+    - func: "create packages"
+    - func: "upload packages"
+
+- name: sign
+  depends_on:
+    - name: compile
+  commands:
+    - func: "fetch packages"
+    - func: "sign msi installer"
+    - func: "upload release packages"
 
 - name: unit_tests
   exec_timeout_secs: 14400 # 4h
@@ -66,13 +81,13 @@ functions:
           export RELEASE='${release}'
           ${SCRIPT_DIR}/build-mongosql-auth.sh
 
-  "create release":
+  "create packages":
     command: shell.exec
     type: test
     params:
       script: |
           ${PREPARE_SHELL}
-          ${SCRIPT_DIR}/create-release.sh
+          ${SCRIPT_DIR}/create-packages.sh
 
   "export variables":
     - command: shell.exec
@@ -99,6 +114,7 @@ functions:
 
           # create expansions from values calculated above
           cat <<EOT > $PROJECT_DIR/expansions.yml
+          PROJECT_DIR: "$PROJECT_DIR"
           SCRIPT_DIR: "$SCRIPT_DIR"
           CURRENT_VERSION: "$CURRENT_VERSION"
           PUSH_NAME: "$PUSH_NAME"
@@ -114,6 +130,15 @@ functions:
     - command: expansions.update
       params:
         file: mongosql-auth-c/expansions.yml
+
+  "fetch packages":
+    - command: s3.get
+      params:
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        remote_file: mongosql-auth-c/artifacts/${version_id}/${build_variant}/pkg/release-bundles.tgz
+        extract_to: mongosql-auth-c/test/artifacts/
+        bucket: mciuploads
 
   "fetch source":
     - command: shell.exec
@@ -172,6 +197,24 @@ functions:
           ${PREPARE_SHELL}
           ${SCRIPT_DIR}/run-unit-tests.sh
 
+  "sign msi installer":
+    - command: shell.exec
+      params:
+        silent: true
+        script: |
+          echo "${signing_token_bi_connector}" > ${PROJECT_DIR}/signing_auth_token
+    - command: shell.exec
+      params:
+        working_dir: mongosql-auth-c/test/artifacts
+        script: |
+          /usr/local/bin/notary-client.py \
+              --key-name "bi-connector" \
+              --auth-token-file ${PROJECT_DIR}/signing_auth_token \
+              --comment "Evergreen Automatic Signing (mongosql-auth-c) - ${version_id} - ${build_variant}" \
+              --notary-url http://notary-service.build.10gen.cc:5000 \
+              --skip-missing \
+              release.msi
+
   "start mongo-orchestration":
     - command: shell.exec
       params:
@@ -225,6 +268,17 @@ functions:
         bucket: mciuploads
         permissions: public-read
         display_name: "mongosql-auth.msi"
+    - command: s3.put
+      params:
+        optional: true
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        local_file: mongosql-auth-c/test/artifacts/release-signed.msi
+        remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/mongosql-auth-${PUSH_NAME}-${PUSH_ARCH}-${CURRENT_VERSION}.msi
+        content_type: application/x-msi
+        bucket: mciuploads
+        permissions: public-read
+        display_name: "mongosql-auth-signed.msi"
     - command: s3.put
       params:
         optional: true
@@ -344,6 +398,59 @@ functions:
         bucket: mciuploads
         permissions: public-read
         display_name: "create-release.log"
+
+  "upload packages":
+    - command: archive.targz_pack
+      params:
+        target: mongosql-auth-c/test/artifacts/upload.tgz
+        source_dir: mongosql-auth-c/test/artifacts/
+        include:
+          - "./release.*"
+    - command: s3.put
+      params:
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        local_file: mongosql-auth-c/test/artifacts/upload.tgz
+        remote_file: mongosql-auth-c/artifacts/${version_id}/${build_variant}/pkg/release-bundles.tgz
+        content_type: application/x-gzip
+        bucket: mciuploads
+        permissions: public-read
+        display_name: All Release Bundles (.tgz)
+
+  "upload release packages":
+    - command: s3.put
+      params:
+        optional: true
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        local_file: mongosql-auth-c/test/artifacts/release.tgz
+        remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/mongosql-auth-${PUSH_NAME}-${PUSH_ARCH}-${CURRENT_VERSION}.tgz
+        content_type: application/x-gzip
+        bucket: mciuploads
+        permissions: public-read
+        display_name: mongosql-auth-${PUSH_NAME}-${PUSH_ARCH}-${CURRENT_VERSION}.tgz
+    - command: s3.put
+      params:
+        optional: true
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        local_file: mongosql-auth-c/test/artifacts/release.zip
+        remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/mongosql-auth-${PUSH_NAME}-${PUSH_ARCH}-${CURRENT_VERSION}.zip
+        content_type: application/x-gzip
+        bucket: mciuploads
+        permissions: public-read
+        display_name: mongosql-auth-${PUSH_NAME}-${PUSH_ARCH}-${CURRENT_VERSION}.zip
+    - command: s3.put
+      params:
+        optional: true
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        local_file: mongosql-auth-c/test/artifacts/release-signed.msi
+        remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/mongosql-auth-${PUSH_NAME}-${PUSH_ARCH}-${CURRENT_VERSION}.msi
+        content_type: application/x-msi
+        bucket: mciuploads
+        permissions: public-read
+        display_name: mongosql-auth-${PUSH_NAME}-${PUSH_ARCH}-${CURRENT_VERSION}.msi
 
 axes:
 
