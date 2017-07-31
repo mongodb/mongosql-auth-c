@@ -21,6 +21,7 @@ fi
 
 ARTIFACTS_DIR="$PROJECT_DIR/test/artifacts"
 LOG_FILE="$ARTIFACTS_DIR/log/${basename%.sh}.log"
+
 export SQLPROXY_DOWNLOAD_DIR="$ARTIFACTS_DIR/sqlproxy"
 export MONGO_ORCHESTRATION_HOME="$ARTIFACTS_DIR/orchestration"
 
