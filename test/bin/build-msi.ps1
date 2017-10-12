@@ -3,6 +3,8 @@
     Builds an MSI for mongosqd.exe and mongodrdl.exe.
 .DESCRIPTION
     .
+.PARAMETER ProgramFilesFolder
+    The Program Files folder to use for installation
 .PARAMETER ProjectName
     The name to use when referring to the project.
 .PARAMETER VersionLabel
@@ -12,6 +14,7 @@
     The path to the WIX binaries.
 #>
 Param(
+  [string]$ProgramFilesFolder,
   [string]$ProjectName,
   [string]$VersionLabel,
   [string]$WixPath
@@ -35,6 +38,7 @@ $upgradeCode = "3f021824-c333-49f5-9cbf-d6de9b6adacc"
 
 # compile wxs into .wixobjs
 & $WixPath\candle.exe -wx `
+    -dProgramFilesFolder="$ProgramFilesFolder" `
     -dProductId="*" `
     -dUpgradeCode="$upgradeCode" `
     -dVersion="$version" `

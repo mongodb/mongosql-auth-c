@@ -477,6 +477,11 @@ axes:
     run_on: windows-64-vs2013-compile
     variables:
       variant: windows-vs2013
+  - id: windows-32
+    display_name: Windows 32 (VS2013)
+    run_on: windows-64-vs2013-compile
+    variables:
+      variant: windows-32
 
 - id: os-disabled
   display_name: Disabled OSes

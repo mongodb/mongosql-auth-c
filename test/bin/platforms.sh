@@ -22,10 +22,20 @@ osx)
     ;;
 windows-vs2013)
     export SQLPROXY_BUILD_VARIANT='full_matrix__os_full_matrix~windows_mongodb_version~latest_mongodb_topology~standalone'
-    CMAKE_PATH="/cygdrive/c/cmake/bin"
-    CMAKE_GENERATOR="Visual Studio 12 2013 Win64"
-    MSBUILD_PATH="/cygdrive/c/Program Files (x86)/MSBuild/12.0/Bin"
+    CMAKE_PATH='/cygdrive/c/cmake/bin'
+    CMAKE_GENERATOR='Visual Studio 12 2013 Win64'
+    MSBUILD_PATH='/cygdrive/c/Program Files (x86)/MSBuild/12.0/Bin'
+    PROGRAM_FILES_FOLDER='ProgramFiles64Folder'
     PUSH_ARCH='x86_64'
+    PUSH_NAME='win32'
+    ;;
+windows-32)
+    export SQLPROXY_BUILD_VARIANT='full_matrix__os_full_matrix~windows_mongodb_version~latest_mongodb_topology~standalone'
+    CMAKE_PATH='/cygdrive/c/cmake/bin'
+    CMAKE_GENERATOR='Visual Studio 12 2013'
+    MSBUILD_PATH='/cygdrive/c/Program Files (x86)/MSBuild/12.0/Bin'
+    PROGRAM_FILES_FOLDER='ProgramFilesFolder'
+    PUSH_ARCH='x86'
     PUSH_NAME='win32'
     ;;
 other) # on evergreen, but "variant" expansion not set

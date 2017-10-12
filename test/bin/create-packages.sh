@@ -34,6 +34,7 @@
             -NoLogo \
             -NonInteractive \
             -File "$(cygpath -C ANSI -w "$SCRIPT_DIR/build-msi.ps1")" \
+            -ProgramFilesFolder "$PROGRAM_FILES_FOLDER" \
             -ProjectName "MongoSQL Auth Plugin" \
             -VersionLabel "$SEMVER" \
             -WixPath "$WIX\\bin"

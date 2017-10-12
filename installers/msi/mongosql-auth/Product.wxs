@@ -14,7 +14,7 @@
         <WixVariable Id="ProductName" Value="$(var.ProjectName) $(var.VersionLabel)" />
 
         <Directory Id="TARGETDIR" Name="SourceDir">
-            <Directory Id="ProgramFiles64Folder">
+            <Directory Id="$(var.ProgramFilesFolder)">
                 <Directory Id="MongoDB" Name="MongoDB">
                     <Directory Id="BIConnector" Name="Connector for BI">
                         <Directory Id="AUTHPLUGINDIR" Name="MongoSQL Authentication Plugin" />

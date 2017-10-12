@@ -28,7 +28,7 @@
 
     echo "starting sqlproxy..."
     if [ "Windows_NT" = "$OS" ]; then
-        cd /cygdrive/c/Program\ Files/MongoDB/Connector\ for\ BI/2.2/bin
+        cd /cygdrive/c/Program\ Files/MongoDB/Connector\ for\ BI/2.3/bin
         ./mongosqld.exe install \
             $SQLPROXY_MONGO_ARGS \
             --logPath $ARTIFACTS_DIR/log/sqlproxy.log \
