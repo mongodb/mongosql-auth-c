@@ -23,6 +23,8 @@
 #include "mongosql-auth-config.h"
 #include "mongosql-auth-conversation.h"
 
+#define MONGOSQL_AUTH_MAX_BUF_SIZE 65536
+
 typedef struct mongosql_auth_t {
     int status;
     char* error_msg;
@@ -38,7 +40,7 @@ void
 _mongosql_auth_destroy(mongosql_auth_t *plugin);
 
 void
-_mongosql_auth_start(mongosql_auth_t *plugin, const char *username, const char *password);
+_mongosql_auth_start(mongosql_auth_t *plugin, const char *username, const char *password, const char *host);
 
 void
 _mongosql_auth_step(mongosql_auth_t *plugin);

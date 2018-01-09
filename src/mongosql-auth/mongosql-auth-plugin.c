@@ -37,7 +37,7 @@ static int mongosql_auth(MYSQL_PLUGIN_VIO *vio, MYSQL *mysql)
     int status;
 
     _mongosql_auth_init(&plugin, vio);
-    _mongosql_auth_start(&plugin, mysql->user, mysql->passwd);
+    _mongosql_auth_start(&plugin, mysql->user, mysql->passwd, mysql->host);
 
     while (!_mongosql_auth_is_done(&plugin)) {
         _mongosql_auth_step(&plugin);

@@ -31,6 +31,7 @@
     cp -r $PROJECT_DIR/src/mongosql-auth plugin/auth/
     cat $PROJECT_DIR/src/CMakeLists.txt >> CMakeLists.txt
     cat $PROJECT_DIR/src/versioninfo.rc.in > cmake/versioninfo.rc.in
+    cp $PROJECT_DIR/cmake/*.cmake cmake
     echo "done moving plugin source into mysql repo"
 
     # move testing source and build files into mysql repo
@@ -76,7 +77,8 @@ EOF
     echo "done building mongosql_auth"
 
     echo "copying plugin to build dir..."
-    cp $PLUGIN_LIBRARY $ARTIFACTS_DIR/build
+    mkdir -p $ARTIFACTS_DIR/build
+    cp $PLUGIN_LIBRARY $ARTIFACTS_DIR/build/
     echo "copied plugin to build dir"
 
 ) > $LOG_FILE 2>&1
