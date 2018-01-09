@@ -52,12 +52,15 @@ _mongosql_auth_destroy(mongosql_auth_t *plugin) {
 
 /* execute the first steps of the conversation and update the plugin with auth data */
 void
-_mongosql_auth_start(mongosql_auth_t *plugin, const char *username, const char *password) {
-    unsigned char *pkt;
+_mongosql_auth_start(mongosql_auth_t *plugin,
+                     const char *username,
+                     const char *password,
+                     const char *host) {
+    uint8_t *pkt;
     int pkt_len;
     uint8_t major_version;
     uint8_t minor_version;
-    unsigned char *mechanism;
+    char *mechanism;
 
     /* read auth-data */
     MONGOSQL_AUTH_LOG("%s", "Reading auth-data from server");
@@ -96,8 +99,8 @@ _mongosql_auth_start(mongosql_auth_t *plugin, const char *username, const char *
         return;
     }
 
+    mechanism = (char*) pkt;
     /* set the plugin's num_conversations field */
-    mechanism = pkt;
     memcpy(&plugin->num_conversations, pkt+strlen(mechanism)+1, 4);
     MONGOSQL_AUTH_LOG("    mechanism: %s", mechanism);
     MONGOSQL_AUTH_LOG("    num_conversations: %u", plugin->num_conversations);
@@ -106,7 +109,7 @@ _mongosql_auth_start(mongosql_auth_t *plugin, const char *username, const char *
     MONGOSQL_AUTH_LOG("Initializing %d conversation structs", plugin->num_conversations);
     plugin->conversations = calloc(plugin->num_conversations, sizeof(mongosql_auth_conversation_t));
     for (unsigned int i=0; i<plugin->num_conversations; i++) {
-        _mongosql_auth_conversation_init(&plugin->conversations[i], username, password, mechanism);
+        _mongosql_auth_conversation_init(&plugin->conversations[i], username, password, mechanism, host);
     }
 }
 
@@ -154,6 +157,18 @@ _mongosql_auth_read_payload(mongosql_auth_t *plugin) {
     for(unsigned int i=0; i<plugin->num_conversations; i++) {
         conv = &plugin->conversations[i];
         memcpy(&conv->buf_len, pkt, 4);
+        MONGOSQL_AUTH_LOG("received %zu bytes from server", conv->buf_len);
+        if (conv->buf_len > MONGOSQL_AUTH_MAX_BUF_SIZE) {
+            _mongosql_auth_set_error(plugin, "received data size too large");
+            return;
+        }
+        // This buffer will be the responsibility of its receiver to free.
+        conv->buf = realloc(conv->buf, conv->buf_len);
+        if (conv->buf == NULL) {
+            _mongosql_auth_set_error(plugin, "failed to allocate receive buffer");
+            return;
+        }
+
         pkt += 4;
         memcpy(conv->buf, pkt, conv->buf_len);
         pkt += conv->buf_len;
@@ -165,11 +180,10 @@ void
 _mongosql_auth_write_payload(mongosql_auth_t *plugin) {
     int err;
     mongosql_auth_conversation_t *conv;
-    uint32_t conversation_payload_len;
-    uint32_t conversation_len;
-    uint32_t mongosql_auth_data_len;
-    unsigned char *mongosql_auth_data;
-    unsigned char *conversation_data;
+    uint32_t i;
+    size_t mongosql_auth_data_len;
+    uint8_t *mongosql_auth_data;
+    uint8_t *conversation_data;
 
     /* if there is an error, stop */
     if (_mongosql_auth_has_error(plugin)) {
@@ -179,10 +193,12 @@ _mongosql_auth_write_payload(mongosql_auth_t *plugin) {
 
     MONGOSQL_AUTH_LOG("%s", "Writing payload to server");
 
-    /* allocate buffer for auth protocol payload */
-    conversation_payload_len = plugin->conversations[0].buf_len;
-    conversation_len = conversation_payload_len + 5;
-    mongosql_auth_data_len = conversation_len * plugin->num_conversations;
+    // To allocate a buffer for auth protocol payload, calulate the total size of all conversations.
+    // Each buffer will be a different size.
+    mongosql_auth_data_len = 0;
+    for (i = 0; i < plugin->num_conversations; i++) {
+        mongosql_auth_data_len += plugin->conversations[i].buf_len + 5;
+    }
     mongosql_auth_data = malloc(mongosql_auth_data_len);
 
     /*
@@ -190,14 +206,14 @@ _mongosql_auth_write_payload(mongosql_auth_t *plugin) {
      * populate the corresponding piece of mongosql_auth_data
      */
     conversation_data = mongosql_auth_data;
-    for(unsigned int i=0; i<plugin->num_conversations; i++) {
+    for(i=0; i<plugin->num_conversations; i++) {
         conv = &plugin->conversations[i];
 
         memcpy(conversation_data, &conv->done, 1);
         memcpy(conversation_data+1, &conv->buf_len, 4);
         memcpy(conversation_data+5, conv->buf, conv->buf_len);
 
-        conversation_data += conversation_len;
+        conversation_data += conv->buf_len + 5;
     }
 
     /* write mongosql_auth_data to the wire */
@@ -209,6 +225,7 @@ _mongosql_auth_write_payload(mongosql_auth_t *plugin) {
         _mongosql_auth_set_error(plugin, "failed writing client response");
     }
 
+    // No need to free the conversation buffers because they will either be realloc'd or destroyed later
     free (mongosql_auth_data);
 }
 

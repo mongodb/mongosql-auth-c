@@ -11,8 +11,14 @@ buildvariants:
     - name: unit_tests
     - name: integration_tests_plain
     - name: integration_tests_scram
+    - name: integration_tests_gssapi
   matrix_spec:
     os: "*"
+  rules:
+    - if:
+        os: [ "windows-32","windows-vs2013" ] 
+      then:
+        remove_tasks: ["integration_tests_gssapi"]
 
 pre:
   - command: shell.track
@@ -69,6 +75,13 @@ tasks:
     - func: "start mongo-orchestration"
     - func: "build mongosql_auth"
     - func: "run scram integration tests"
+
+- name: integration_tests_gssapi
+  exec_timeout_secs: 14400 # 4h
+  commands:
+    - func: "install dependencies"
+    - func: "build mongosql_auth"
+    - func: "run gssapi integration tests"
 
 functions:
 
@@ -188,6 +201,20 @@ functions:
         script: |
           ${PREPARE_SHELL}
           ${SCRIPT_DIR}/run-integration-tests-scram.sh
+
+  "run gssapi integration tests":
+    - command: shell.exec
+      type: test
+      params:
+        script: |
+          ${PREPARE_SHELL}
+          export GSSAPI_USER=${gssapi_auth_linux_user}
+          export GSSAPI_PASSWD=${gssapi_auth_linux_password}
+          export GSSAPI_KTNAME=${PROJECT_DIR}/test/artifacts/gssapi/drivers.keytab
+          echo "${gssapi_auth_linux_keytab_base64}" > /tmp/drivers.keytab.base64
+          mkdir -p $(dirname $GSSAPI_KTNAME)
+          base64 --decode /tmp/drivers.keytab.base64 > $GSSAPI_KTNAME
+          ${SCRIPT_DIR}/run-integration-tests-gssapi.sh
 
   "run unit tests":
     - command: shell.exec
@@ -471,7 +498,7 @@ axes:
     display_name: OSX 10.12
     run_on: macos-1012
     variables:
-      variant: osx
+      variant: macos
   - id: windows-vs2013
     display_name: Windows 64 (VS2013)
     run_on: windows-64-vs2013-compile

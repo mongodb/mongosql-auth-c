@@ -14,7 +14,7 @@ rhel70)
     PUSH_ARCH='x86_64-rhel70'
     PUSH_NAME='linux'
     ;;
-osx)
+macos)
     export SQLPROXY_BUILD_VARIANT='osx-x86_64'
     CMAKE_PATH='/Applications/Cmake.app/Contents/bin'
     PUSH_ARCH='x86_64'

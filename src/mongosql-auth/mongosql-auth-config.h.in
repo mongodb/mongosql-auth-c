@@ -28,4 +28,36 @@
 #define MONGOSQL_AUTH_LOG(format, ...)
 #endif
 
+/*
+ * MONGOSQL_AUTH_ENABLE_SASL is set from configure to determine if we are
+ * compiled with SASL support.
+ */
+#define MONGOSQL_AUTH_ENABLE_SASL @MONGOSQL_AUTH_ENABLE_SASL@
+
+#if MONGOSQL_AUTH_ENABLE_SASL != 1
+#  undef MONGOSQL_AUTH_ENABLE_SASL
+#endif
+
+/*
+ * MONGOSQL_AUTH_ENABLE_SASL_SSPI is set from configure to determine if we are
+ * compiled with SSPI support.
+ */
+#define MONGOSQL_AUTH_ENABLE_SASL_SSPI @MONGOSQL_AUTH_ENABLE_SASL_SSPI@
+
+#if MONGOSQL_AUTH_ENABLE_SASL_SSPI != 1
+#  undef MONGOSQL_AUTH_ENABLE_SASL_SSPI
+#endif
+
+
+/*
+ * MONGOSQL_AUTH_ENABLE_SASL_GSSAPI is set from configure to determine if we are
+ * compiled with GSSAPI support.
+ */
+#define MONGOSQL_AUTH_ENABLE_SASL_GSSAPI @MONGOSQL_AUTH_ENABLE_SASL_GSSAPI@
+
+#if MONGOSQL_AUTH_ENABLE_SASL_GSSAPI != 1
+#  undef MONGOSQL_AUTH_ENABLE_SASL_GSSAPI
+#endif
+
+
 #endif /* MONGOSQL_AUTH_MISC_H */
