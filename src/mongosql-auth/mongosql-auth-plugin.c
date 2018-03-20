@@ -20,6 +20,7 @@
 #include <mysql.h>
 #include "mongosql-auth-config.h"
 #include "mongosql-auth.h"
+#include "mongosql-auth-plugin.h"
 
 /**
   Authenticate the client using the MongoDB MySQL Authentication Plugin Protocol.
@@ -31,7 +32,7 @@
     @retval CR_ERROR An error occurred.
     @retval CR_OK Authentication succeeded.
 */
-static int mongosql_auth(MYSQL_PLUGIN_VIO *vio, MYSQL *mysql)
+int mongosql_auth(MYSQL_PLUGIN_VIO *vio, MYSQL *mysql)
 {
     mongosql_auth_t plugin;
     int status;
