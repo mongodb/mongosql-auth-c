@@ -16,7 +16,7 @@ buildvariants:
     os: "*"
   rules:
     - if:
-        os: [ "windows-32","windows-vs2013" ] 
+        os: [ "windows-32","windows-64" ] 
       then:
         remove_tasks: ["integration_tests_gssapi"]
 
@@ -499,14 +499,14 @@ axes:
     run_on: macos-1012
     variables:
       variant: macos
-  - id: windows-vs2013
-    display_name: Windows 64 (VS2013)
-    run_on: windows-64-vs2013-compile
+  - id: windows-64
+    display_name: Windows 64 (VS2015)
+    run_on: windows-64-vs2015-compile
     variables:
       variant: windows-vs2013
   - id: windows-32
-    display_name: Windows 32 (VS2013)
-    run_on: windows-64-vs2013-compile
+    display_name: Windows 32 (VS2015)
+    run_on: windows-64-vs2015-compile
     variables:
       variant: windows-32
 
