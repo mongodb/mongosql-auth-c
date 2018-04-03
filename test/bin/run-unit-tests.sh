@@ -5,8 +5,7 @@
 (
     set -o errexit
     eval $UNIT_TESTS
-
-) > $LOG_FILE 2>&1
+) 2>&1 | tee $LOG_FILE
 
 print_exit_msg
 

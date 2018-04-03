@@ -61,9 +61,7 @@ test_connect() {
         echo "Skipping keytab test because variant is '$VARIANT'"
         ;;
     esac
-
-
-) > $LOG_FILE 2>&1
+) 2>&1 | tee $LOG_FILE
 
 print_exit_msg
 

@@ -1,6 +1,8 @@
 
 . "$(dirname $0)/platforms.sh"
 
+set -o pipefail
+
 MAJOR_VERSION=1
 MINOR_VERSION=1
 PATCH_VERSION=0
@@ -21,6 +23,7 @@ fi
 
 ARTIFACTS_DIR="$PROJECT_DIR/test/artifacts"
 LOG_FILE="$ARTIFACTS_DIR/log/${basename%.sh}.log"
+mkdir -p "$ARTIFACTS_DIR/log"
 BOOST_DIR="boost_1_59_0"
 BOOST_FILE="$BOOST_DIR.tar.gz"
 FULL_BOOST_DIR_PATH="$ARTIFACTS_DIR/$BOOST_DIR"
@@ -44,7 +47,7 @@ if [ "Windows_NT" = "$OS" ]; then
     UNIT_TESTS="$ARTIFACTS_DIR/mysql-server/bld/Debug/mongosql_auth_unit_tests.exe"
     MYSQL="$ARTIFACTS_DIR/mysql-server/bld/client/Debug/mysql.exe"
 else
-    BUILD="make mongosql_auth mongosql_auth_unit_tests mysql"
+    BUILD="make mongosql_auth mongosql_auth_so mongosql_auth_unit_tests mysql"
     PLUGIN_LIBRARY="$ARTIFACTS_DIR/mysql-server/bld/mongosql_auth.so"
     UNIT_TESTS="$ARTIFACTS_DIR/mysql-server/bld/mongosql_auth_unit_tests"
     MYSQL="$ARTIFACTS_DIR/mysql-server/bld/client/mysql"

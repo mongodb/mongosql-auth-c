@@ -14,8 +14,7 @@
         ./bison-2.4.1-setup.exe /VERYSILENT /DIR='C:\bison'
         echo "done installing build dependencies"
     fi
-
-) > $LOG_FILE 2>&1
+) 2>&1 | tee $LOG_FILE
 
 print_exit_msg
 

@@ -58,12 +58,15 @@ set (MONGOC_SOURCE_FILES
 )
 
 add_library(mongoc STATIC ${MONGOC_SOURCE_FILES})
-target_link_libraries(mongoc ${MONGO_CRYPTO_LIBS})
+target_link_libraries(mongoc ${MONGO_CRYPTO_LIBS} ${MONGO_KRB_LIBS})
 
 IF(UNIX)
   target_compile_options(mongoc PUBLIC "$<1:-fPIC>")
 ENDIF()
 
+# We need two plugins because this is the only way to build the plugin both statically and dynamically.
+# We need the static plugin for building mongo odbc, and we need the dynamic for stand-alone shipping
+# of mongosql-auth-c.
 MYSQL_ADD_PLUGIN(
     mongosql_auth
     ${PLUGIN_SOURCE_FILES}
@@ -71,3 +74,10 @@ MYSQL_ADD_PLUGIN(
     MANDATORY
 )
 
+MYSQL_ADD_PLUGIN(
+    mongosql_auth_so
+    ${PLUGIN_SOURCE_FILES}
+    LINK_LIBRARIES ${MONGO_CRYPTO_LIBS} ${MONGO_KRB_LIBS}
+    MODULE_ONLY
+    MODULE_OUTPUT_NAME mongosql_auth
+)

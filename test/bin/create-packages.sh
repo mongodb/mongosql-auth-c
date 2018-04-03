@@ -57,7 +57,6 @@
     fi
 
     echo "done creating release"
-
-) > $LOG_FILE 2>&1
+) 2>&1 | tee $LOG_FILE
 
 print_exit_msg

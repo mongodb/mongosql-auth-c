@@ -13,8 +13,7 @@
         --password=pwd123 \
         --execute=exit"
     exec $cmd
-
-) > $LOG_FILE 2>&1
+) 2>&1 | tee $LOG_FILE
 
 print_exit_msg
 

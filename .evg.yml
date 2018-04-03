@@ -1,3 +1,21 @@
+#
+# In order to simplify the process of using, reading, and debugging evergreen
+# expansions in this file, we have adopted the following conventions for naming
+# the expansions according to where they were created:
+#
+#   - Expansions in all lowercase (${some_value}) are set by evergreen itself,
+#     either as global expansions or as project expansions.
+#
+#   - Expansions in all caps (${SOME_VALUE}) are created by re-exporting environment
+#     variables from prepare-shell.sh in the "export variables" function.
+#
+#   - Expansions prefixed with an underscore (${_some_value}) are set on the
+#     buildvariant level.
+#
+#   - Expansions prefixed with `var_` (${var_some_value}) are parameters passed
+#     into evergreen functions by the tasks that call them.
+#
+
 stepback: true
 command_type: system
 buildvariants:
@@ -63,7 +81,8 @@ tasks:
     - func: "install dependencies"
     - func: "start mongosqld"
       vars:
-        mongodb_args: --mongo-uri=ldaptest.10gen.cc
+        var_auth_mechanism: PLAIN
+        var_mongodb_args: --mongo-uri=ldaptest.10gen.cc
     - func: "build mongosql_auth"
     - func: "run plain integration tests"
 
@@ -72,6 +91,8 @@ tasks:
   commands:
     - func: "install dependencies"
     - func: "start mongosqld"
+      vars:
+        var_auth_mechanism: SCRAM-SHA-1
     - func: "start mongo-orchestration"
     - func: "build mongosql_auth"
     - func: "run scram integration tests"
@@ -122,7 +143,6 @@ functions:
           fi
 
           CURRENT_VERSION="$(git describe --always)"
-
           . "$SCRIPT_DIR/platforms.sh"
 
           # create expansions from values calculated above
@@ -208,8 +228,8 @@ functions:
       params:
         script: |
           ${PREPARE_SHELL}
-          export GSSAPI_USER=${gssapi_auth_linux_user}
-          export GSSAPI_PASSWD=${gssapi_auth_linux_password}
+          export GSSAPI_USER=${gssapi_auth_user_name}
+          export GSSAPI_PASSWD=${gssapi_auth_password}
           export GSSAPI_KTNAME=${PROJECT_DIR}/test/artifacts/gssapi/drivers.keytab
           echo "${gssapi_auth_linux_keytab_base64}" > /tmp/drivers.keytab.base64
           mkdir -p $(dirname $GSSAPI_KTNAME)
@@ -258,7 +278,17 @@ functions:
           export EVG_KEY=${evg_key}
           export AWS_ACCESS_KEY_ID=${aws_key}
           export AWS_SECRET_ACCESS_KEY=${aws_secret}
-          export SQLPROXY_MONGO_ARGS=${mongodb_args}
+          if test ${var_auth_mechanism} = "PLAIN"; then
+              export MONGO_USERNAME=${plain_auth_username}
+              export MONGO_PASSWORD=${plain_auth_password}
+          elif test ${var_auth_mechanism} = "SCRAM-SHA-1"; then
+              export MONGO_USERNAME=${scram_auth_username}
+              export MONGO_PASSWORD=${scram_auth_password}
+          else
+              echo "unsupported authentication mechanism ${var_auth_mechanism}"
+              exit 1
+          fi
+          export SQLPROXY_MONGO_ARGS=${var_mongodb_args}
           ${SCRIPT_DIR}/start-sqlproxy.sh
 
   "upload artifacts":
@@ -503,7 +533,7 @@ axes:
     display_name: Windows 64 (VS2015)
     run_on: windows-64-vs2015-compile
     variables:
-      variant: windows-vs2013
+      variant: windows-64
   - id: windows-32
     display_name: Windows 32 (VS2015)
     run_on: windows-64-vs2015-compile

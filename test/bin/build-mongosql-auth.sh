@@ -61,8 +61,10 @@ EOF
 
     cd $ARTIFACTS_DIR
     echo "downloading boost..."
-    curl -S $BOOST_S3_URL > $BOOST_FILE
-    tar xvzf $BOOST_FILE
+    if [ ! -d $BOOST_DIR ]; then
+        curl -S $BOOST_S3_URL > $BOOST_FILE
+        tar xvzf $BOOST_FILE
+    fi
     cd -
 
     mkdir -p bld
@@ -86,8 +88,7 @@ EOF
     mkdir -p $ARTIFACTS_DIR/build
     cp $PLUGIN_LIBRARY $ARTIFACTS_DIR/build/
     echo "copied plugin to build dir"
-
-) > $LOG_FILE 2>&1
+) 2>&1 | tee $LOG_FILE
 
 print_exit_msg
 

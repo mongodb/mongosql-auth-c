@@ -1,3 +1,4 @@
+echo "VARIANT=$VARIANT"
 
 case $VARIANT in
 ubuntu1404-64)

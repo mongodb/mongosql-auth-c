@@ -14,10 +14,10 @@ endif ()
 message (STATUS "Searching for gssapi_krb5")
 find_library(
     GSS_LIBS NAMES gssapi_krb5
-    PATHS /usr/lib /lib /usr/local/lib /usr/share/lib /opt/lib /opt/share/lib /var/lib c:/gssapi/lib)
+    PATHS /usr/lib/x86_64-linux-gnu /usr/lib /lib /usr/local/lib /usr/share/lib /opt/lib /opt/share/lib /var/lib c:/gssapi/lib)
 
 if (GSS_LIBS)
-    message (STATUS "  Found ${GSS_LIBS}")
+    message (STATUS " Found ${GSS_LIBS}")
 else ()
     message (STATUS "  Not found (specify -DCMAKE_LIBRARY_PATH=C:/path/to/gssapi/lib for GSSAPI support)")
 endif ()
