@@ -132,3 +132,8 @@ Specifying `mongosql_auth` here will cause the ODBC driver to use the `mongosql_
 MySQL configuration files can be found in many locations, as enumerated [here](https://dev.mysql.com/doc/refman/5.7/en/option-files.html).
 In one of these files, add a line with `default-auth=mongosql_auth` to the `[client]` section (or create it if it doesn't yet exist).
 To use this same configuration file with an ODBC DSN, provide the `USE_MYCNF=1` connection parameter to your ODBC DSN.
+
+
+## License
+Copyright (c) 2018 MongoDB Inc.
+Dual licensed under the Apache and GPL licenses.
