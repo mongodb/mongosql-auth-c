@@ -9,8 +9,8 @@
         --port 3307 \
         --plugin-dir=$ARTIFACTS_DIR/build/ \
         --default-auth=mongosql_auth \
-        --user=drivers-team?mechanism=PLAIN \
-        --password=mongor0x\$xgen \
+        --user=$PLAIN_USER?mechanism=PLAIN \
+        --password=$PLAIN_PASSWD \
         --execute=exit"
     exec $cmd
 

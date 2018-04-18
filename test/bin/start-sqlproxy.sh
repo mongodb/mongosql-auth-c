@@ -31,19 +31,25 @@
     if [ "Windows_NT" = "$OS" ]; then
         cd "/cygdrive/c/Program Files/MongoDB/Connector for BI/2.4/bin"
 	    ./mongosqld.exe install \
-            $SQLPROXY_MONGO_ARGS \
+            $MONGO_URI \
             --logPath $ARTIFACTS_DIR/log/sqlproxy.log \
             --schema $PROJECT_DIR/test/resources/sqlproxy \
-            --auth -vvvv --mongo-username $MONGO_USERNAME --mongo-password $MONGO_PASSWORD
+            --auth \
+            -vv \
+            --mongo-username $MONGO_USERNAME \
+            --mongo-password $MONGO_PASSWORD
         net start mongosql
     else
         cd *
         cd bin
-        nohup ./mongosqld -vvvv \
-            $SQLPROXY_MONGO_ARGS \
+        nohup ./mongosqld \
+            $MONGO_URI \
             --logPath $ARTIFACTS_DIR/log/sqlproxy.log \
             --schema $PROJECT_DIR/test/resources/sqlproxy \
-            --auth --mongo-username $MONGO_USERNAME --mongo-password $MONGO_PASSWORD &
+            --auth \
+            -vv \
+            --mongo-username $MONGO_USERNAME \
+            --mongo-password $MONGO_PASSWORD &
     fi
     echo "done starting sqlproxy"
 	sleep 5

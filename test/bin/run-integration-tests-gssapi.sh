@@ -9,8 +9,8 @@ test_connect() {
         --port 3307 \
         --plugin-dir=$ARTIFACTS_DIR/build/ \
         --default-auth=mongosql_auth \
-        --password="$user_pass" \
-        --user=$user_name?mechanism=GSSAPI"
+        --password=$password \
+        --user=$principal?mechanism=GSSAPI"
     echo "select id from kerberos.test" | exec $cmd
 }
 
@@ -29,23 +29,25 @@ test_connect() {
     git fetch
 
     echo "building sqlproxy on variant $VARIANT"
-    make clean build-mongosqld run-mongosqld-gssapi
+    export BUILD_TAGS="$BUILD_TAGS gssapi"
+    make clean build-mongosqld run-mongosqld-gssapi-right-username-right-password
 
     export KRB5_TRACE="${ARTIFACTS_DIR}/log/krb5.log"
     export KRB5_CONFIG="${PROJECT_DIR}/test/resources/gssapi/krb5.conf"
 
-    user_name="${GSSAPI_USER}"
     principal="${GSSAPI_USER}@LDAPTEST.10GEN.CC"
-    user_pass=""
+    password=""
 
     # Test auth after kinit
     # Cache a delegated credential from the default keytab
+    echo "running test with credentials cache"
     kinit -k -t $GSSAPI_KTNAME -f $principal
     test_connect
 
     # Test providing password on the CLI
     kdestroy
-    user_pass="$GSSAPI_PASSWD"
+    echo "running test with cli password"
+    password="$GSSAPI_PASSWD"
     test_connect
 
     # Test providing a client keytab with an environment variable.
@@ -54,7 +56,8 @@ test_connect() {
     ubuntu1404*|rhel*)
         kdestroy
         export KRB5_CLIENT_KTNAME=$GSSAPI_KTNAME
-        user_pass=""
+        password=""
+        echo "running test with keytab environment variable"
         test_connect
         ;;
     *)

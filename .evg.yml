@@ -81,8 +81,7 @@ tasks:
     - func: "install dependencies"
     - func: "start mongosqld"
       vars:
-        var_auth_mechanism: PLAIN
-        var_mongodb_args: --mongo-uri=ldaptest.10gen.cc
+        var_mongodb_uri: --mongo-uri=ldaptest.10gen.cc
     - func: "build mongosql_auth"
     - func: "run plain integration tests"
 
@@ -212,6 +211,8 @@ functions:
       params:
         script: |
           ${PREPARE_SHELL}
+          export PLAIN_USER=${plain_auth_username}
+          export PLAIN_PASSWD='${plain_auth_password}'
           ${SCRIPT_DIR}/run-integration-tests-plain.sh
 
   "run scram integration tests":
@@ -228,8 +229,8 @@ functions:
       params:
         script: |
           ${PREPARE_SHELL}
-          export GSSAPI_USER=${gssapi_auth_user_name}
-          export GSSAPI_PASSWD=${gssapi_auth_password}
+          export GSSAPI_USER=${gssapi_auth_username}
+          export GSSAPI_PASSWD='${gssapi_auth_password}'
           export GSSAPI_KTNAME=${PROJECT_DIR}/test/artifacts/gssapi/drivers.keytab
           echo "${gssapi_auth_linux_keytab_base64}" > /tmp/drivers.keytab.base64
           mkdir -p $(dirname $GSSAPI_KTNAME)
@@ -278,17 +279,15 @@ functions:
           export EVG_KEY=${evg_key}
           export AWS_ACCESS_KEY_ID=${aws_key}
           export AWS_SECRET_ACCESS_KEY=${aws_secret}
-          if test ${var_auth_mechanism} = "PLAIN"; then
-              export MONGO_USERNAME=${plain_auth_username}
-              export MONGO_PASSWORD=${plain_auth_password}
-          elif test ${var_auth_mechanism} = "SCRAM-SHA-1"; then
-              export MONGO_USERNAME=${scram_auth_username}
-              export MONGO_PASSWORD=${scram_auth_password}
+          # the SCRAM tests use mongo orchestration
+          if test ${var_auth_mechanism} = "SCRAM-SHA-1"; then
+            export MONGO_USERNAME=bob
+            export MONGO_PASSWORD=pwd123
           else
-              echo "unsupported authentication mechanism ${var_auth_mechanism}"
-              exit 1
+            export MONGO_USERNAME=${admin_username}
+            export MONGO_PASSWORD="${admin_password}"
           fi
-          export SQLPROXY_MONGO_ARGS=${var_mongodb_args}
+          export MONGO_URI=${var_mongodb_uri}
           ${SCRIPT_DIR}/start-sqlproxy.sh
 
   "upload artifacts":
@@ -427,6 +426,28 @@ functions:
         optional: true
         aws_key: ${aws_key}
         aws_secret: ${aws_secret}
+        local_file: mongosql-auth-c/test/artifacts/log/create-release.log
+        remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/create-release.log
+        content_type: text/plain
+        bucket: mciuploads
+        permissions: public-read
+        display_name: "create-release.log"
+    - command: s3.put
+      params:
+        optional: true
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        local_file: mongosql-auth-c/test/artifacts/log/run-integration-tests-gssapi.log
+        remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/run-integration-tests-gssapi.log
+        content_type: text/plain
+        bucket: mciuploads
+        permissions: public-read
+        display_name: "run-integration-tests-gssapi.log"
+    - command: s3.put
+      params:
+        optional: true
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
         local_file: mongosql-auth-c/test/artifacts/log/run-integration-tests-plain.log
         remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/run-integration-tests-plain.log
         content_type: text/plain
@@ -449,12 +470,12 @@ functions:
         optional: true
         aws_key: ${aws_key}
         aws_secret: ${aws_secret}
-        local_file: mongosql-auth-c/test/artifacts/log/create-release.log
-        remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/create-release.log
+        local_file: mongosql-auth-c/test/artifacts/log/create-packages.log
+        remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/create-packages.log
         content_type: text/plain
         bucket: mciuploads
         permissions: public-read
-        display_name: "create-release.log"
+        display_name: "create-packages.log"
 
   "upload packages":
     - command: archive.targz_pack
