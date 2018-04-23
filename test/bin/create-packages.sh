@@ -20,8 +20,10 @@
             --transform $build_dir/mongosql_auth.dll=$release_dir/lib/mongosql_auth.dll \
             --transform README.md=$release_dir/README \
             --transform THIRD_PARTY_NOTICES=$release_dir/THIRD-PARTY-NOTICES \
-            --transform LICENSE=$release_dir/LICENSE \
-            LICENSE \
+            --transform LICENSE-APACHE=$release_dir/LICENSE-APACHE \
+            --transform LICENSE-GPL=$release_dir/LICENSE-GPL \
+            LICENSE-APACHE \
+            LICENSE-GPL \
             README.md \
             THIRD_PARTY_NOTICES \
             $build_dir\\mongosql_auth.dll
@@ -48,8 +50,10 @@
             --transform $build_dir/mongosql_auth.so=$release_dir/lib/mongosql_auth.so \
             --transform README.md=$release_dir/README \
             --transform THIRD_PARTY_NOTICES=$release_dir/THIRD-PARTY-NOTICES \
-            --transform LICENSE=$release_dir/LICENSE \
-            LICENSE \
+            --transform LICENSE-APACHE=$release_dir/LICENSE-APACHE \
+            --transform LICENSE-GPL=$release_dir/LICENSE-GPL \
+            LICENSE-APACHE \
+            LICENSE-GPL \
             README.md \
             THIRD_PARTY_NOTICES \
             $build_dir/mongosql_auth.so

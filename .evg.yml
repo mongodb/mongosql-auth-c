@@ -231,8 +231,8 @@ functions:
           ${PREPARE_SHELL}
           export GSSAPI_USER=${gssapi_auth_username}
           export GSSAPI_PASSWD='${gssapi_auth_password}'
-          export GSSAPI_KTNAME=${PROJECT_DIR}/test/artifacts/gssapi/drivers.keytab
-          echo "${gssapi_auth_linux_keytab_base64}" > /tmp/drivers.keytab.base64
+          export GSSAPI_KTNAME='${PROJECT_DIR}/test/artifacts/gssapi/drivers.keytab'
+          echo '${gssapi_auth_linux_keytab_base64}' > /tmp/drivers.keytab.base64
           mkdir -p $(dirname $GSSAPI_KTNAME)
           base64 --decode /tmp/drivers.keytab.base64 > $GSSAPI_KTNAME
           ${SCRIPT_DIR}/run-integration-tests-gssapi.sh
@@ -368,6 +368,17 @@ functions:
         bucket: mciuploads
         permissions: public-read
         display_name: "orchestration-server.log"
+    - command: s3.put
+      params:
+        optional: true
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
+        local_file: mongosql-auth-c/test/artifacts/go/src/github.com/10gen/sqlproxy/testdata/artifacts/log/mongosqld.log
+        remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/mongosqld.log
+        content_type: text/plain
+        bucket: mciuploads
+        permissions: public-read
+        display_name: "mongosqld.log"
     - command: s3.put
       params:
         aws_key: ${aws_key}

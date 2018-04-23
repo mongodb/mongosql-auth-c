@@ -22,7 +22,7 @@
     # go to the mysql dir and clean the working tree
     echo "cleaning mysql working tree..."
     cd mysql-server
-    git checkout 4826e15 -- .
+    git checkout 4826e159b432c961290cdbe651da0cfe3d7b2539
     rm -rf plugin/auth/mongosql-auth
     echo "done cleaning mysql working tree"
 

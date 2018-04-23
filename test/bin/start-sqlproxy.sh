@@ -13,7 +13,7 @@
     cd $SQLPROXY_DOWNLOAD_DIR
     if [ "Windows_NT" = "$OS" ]; then
         msiexec /i sqlproxy /qn /log $ARTIFACTS_DIR/log/mongosql-install.log
-	sleep 2
+        sleep 2
     else
         tar xzvf sqlproxy
     fi
@@ -29,8 +29,9 @@
 
     echo "starting sqlproxy..."
     if [ "Windows_NT" = "$OS" ]; then
+        echo "  ...installing mongosql service"
         cd "/cygdrive/c/Program Files/MongoDB/Connector for BI/2.4/bin"
-	    ./mongosqld.exe install \
+            ./mongosqld.exe install \
             $MONGO_URI \
             --logPath $ARTIFACTS_DIR/log/sqlproxy.log \
             --schema $PROJECT_DIR/test/resources/sqlproxy \
@@ -38,6 +39,7 @@
             -vv \
             --mongo-username $MONGO_USERNAME \
             --mongo-password $MONGO_PASSWORD
+        echo "  ...starting mongosql service"
         net start mongosql
     else
         cd *
@@ -52,7 +54,7 @@
             --mongo-password $MONGO_PASSWORD &
     fi
     echo "done starting sqlproxy"
-	sleep 5
+    sleep 5
 # redirect stdin and stdout to a file instead of piping to tee so that we do
 # not need to run this as a background task.
 ) > $LOG_FILE 2>&1

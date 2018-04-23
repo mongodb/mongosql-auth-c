@@ -10,12 +10,29 @@ test_connect() {
         --plugin-dir=$ARTIFACTS_DIR/build/ \
         --default-auth=mongosql_auth \
         --password=$password \
-        --user=$principal?mechanism=GSSAPI"
-    echo "select id from kerberos.test" | exec $cmd
+        --user=$principal?mechanism=GSSAPI&serviceName=mongosql2"
+    echo "select _id from kerberos.test" | exec $cmd
 }
 
 (
     set -o errexit
+
+    if [ "$GSSAPI_USER" = '' ]; then
+        echo 'GSSAPI_USER environment variable not set'
+        exit 1
+    fi
+    if [ "$GSSAPI_PASSWD" = '' ]; then
+        echo 'GSSAPI_PASSWD environment variable not set'
+        exit 1
+    fi
+    if [ "$GSSAPI_KTNAME" = '' ]; then
+        echo 'GSSAPI_KTNAME environment variable not set'
+        exit 1
+    fi
+    if [ ! -f "$GSSAPI_KTNAME" ]; then
+        echo "could not find file specified in GSSAPI_KTNAME ($GSSAPI_KTNAME)"
+        exit 1
+    fi
 
     # This test depends on a make target of sqlproxy that includes a private keytab file,
     # so we must pull it and build manually.
