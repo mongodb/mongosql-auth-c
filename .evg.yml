@@ -17,7 +17,7 @@
 #
 
 stepback: true
-command_type: system
+command_type: setup
 buildvariants:
 
 - matrix_name: full_matrix
@@ -124,6 +124,7 @@ functions:
 
   "export variables":
     - command: shell.exec
+      type: system
       params:
         silent: true
         working_dir: mongosql-auth-c
@@ -174,6 +175,7 @@ functions:
 
   "fetch source":
     - command: shell.exec
+      type: system
       params:
         silent: true
         script: |
@@ -195,11 +197,13 @@ functions:
 
   "reset testing state":
     - command: shell.exec
+      type: system
       params:
         silent: true
         script: |
           ${killall_mci}
     - command: shell.exec
+      type: system
       params:
         script: |
           ${PREPARE_SHELL}
@@ -247,6 +251,7 @@ functions:
 
   "sign msi installer":
     - command: shell.exec
+      type: system
       params:
         silent: true
         script: |
@@ -272,6 +277,7 @@ functions:
 
   "start mongosqld":
     - command: shell.exec
+      type: test
       params:
         script: |
           ${PREPARE_SHELL}
