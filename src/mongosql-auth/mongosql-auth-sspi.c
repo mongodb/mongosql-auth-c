@@ -159,11 +159,11 @@ int mongosql_auth_sspi_client_init(
       memcpy(client->spn, target_spn, strlen(target_spn)+1);
     }
 
-    if (!username) {
+    if (!username || strlen(username) == 0) {
         // If no username was provided, auth with the default credentials.
         // So we don't set principal_name or auth_data here.
         MONGOSQL_AUTH_LOG("%s","      Acquiring default credentials");
-    } else if (!password) {
+    } else if (!password || strlen(password) == 0) {
         // If a username was provided but no password,
         // pass in the username as principal_name but no auth_data.
         MONGOSQL_AUTH_LOG("%s","      Acquiring credentials with username");
