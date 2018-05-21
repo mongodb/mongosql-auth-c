@@ -81,7 +81,7 @@
     # Forcibly kill the process listening on port 8889, most likey a wild
     # mongo-orchestration left running from a previous task.
     if [ "Windows_NT" = "$OS" ]; then # Magic variable in cygwin
-      OLD_MO_PID=$(netstat -ano | grep ':8889 .* LISTENING' | awk '{print $5}' | tr -d '[:space:]')
+      OLD_MO_PID=$(netstat -ano | grep ':8889 .* LISTENING' | awk '{print $5}' | tr -d '[:space:]') || true
       if [ ! -z "$OLD_MO_PID" ]; then
         taskkill /F /T /PID "$OLD_MO_PID" || true
       fi

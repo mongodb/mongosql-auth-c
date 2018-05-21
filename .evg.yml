@@ -293,7 +293,7 @@ functions:
             export MONGO_USERNAME=${admin_username}
             export MONGO_PASSWORD="${admin_password}"
           fi
-          export MONGO_URI=${var_mongodb_uri}
+          export MONGO_URI=${var_mongodb_uri|--mongo-uri=127.0.0.1}
           ${SCRIPT_DIR}/start-sqlproxy.sh
 
   "upload artifacts":
