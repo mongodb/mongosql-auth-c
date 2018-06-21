@@ -1,6 +1,5 @@
 # Defaults.
 set (MONGOC_DEBUG 0)
-set (MONGOSQL_AUTH_DEBUG 0)
 
 include(FindMongoCrypto)
 include(FindMongoKerberos)

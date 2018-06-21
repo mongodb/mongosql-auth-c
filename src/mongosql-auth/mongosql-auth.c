@@ -14,16 +14,36 @@
  * limitations under the License.
  */
 
+#include <stdarg.h>
+#include <stdlib.h>
 #include "mongosql-auth.h"
 
 #define MONGOSQL_AUTH_PROTOCOL_MAJOR_VERSION 1
 #define MONGOSQL_AUTH_PROTOCOL_MINOR_VERSION 0
 
+void
+mongosql_auth_log(const char *format,...) {
+	char *debug_var;
+    va_list args;
+
+	debug_var = getenv("MONGOSQL_AUTH_DEBUG");
+    if (!debug_var || strcmp(debug_var, "") == 0 || strcmp(debug_var, "0") == 0) {
+        va_end(args);
+        return;
+    }
+
+    va_start(args, format);
+    fprintf(stderr, "[DEBUG]  ");
+    vfprintf(stderr, format, args);
+    fprintf(stderr, "\n");
+    va_end(args);
+}
+
 /* initialize the plugin state with the provided fields */
 void
 _mongosql_auth_init(mongosql_auth_t *plugin, MYSQL_PLUGIN_VIO *vio) {
 
-    MONGOSQL_AUTH_LOG("%s", "Initializing auth plugin");
+    mongosql_auth_log("%s", "Initializing auth plugin");
 
     /* initialize fields with provided parameters */
     plugin->vio = vio;
@@ -63,7 +83,7 @@ _mongosql_auth_start(mongosql_auth_t *plugin,
     char *mechanism;
 
     /* read auth-data */
-    MONGOSQL_AUTH_LOG("%s", "Reading auth-data from server");
+    mongosql_auth_log("%s", "Reading auth-data from server");
     pkt_len = plugin->vio->read_packet(plugin->vio, &pkt);
     if (pkt_len < 0) {
         _mongosql_auth_set_error(plugin, "failed reading auth-data from initial handshake");
@@ -73,8 +93,8 @@ _mongosql_auth_start(mongosql_auth_t *plugin,
     /* parse the contents of auth-data */
     memcpy(&major_version, pkt, 1);
     memcpy(&minor_version, pkt+1, 1);
-    MONGOSQL_AUTH_LOG("Server protocol version: %d.%d", major_version, minor_version);
-    MONGOSQL_AUTH_LOG("Client protocol version: %d.%d", MONGOSQL_AUTH_PROTOCOL_MAJOR_VERSION,
+    mongosql_auth_log("Server protocol version: %d.%d", major_version, minor_version);
+    mongosql_auth_log("Client protocol version: %d.%d", MONGOSQL_AUTH_PROTOCOL_MAJOR_VERSION,
                                                         MONGOSQL_AUTH_PROTOCOL_MINOR_VERSION);
 
     /* validate protocol version */
@@ -85,14 +105,14 @@ _mongosql_auth_start(mongosql_auth_t *plugin,
     }
 
     /* write 0 bytes */
-    MONGOSQL_AUTH_LOG("%s", "Writing empty response to server");
+    mongosql_auth_log("%s", "Writing empty response to server");
     if (plugin->vio->write_packet(plugin->vio, (const unsigned char *) "", 1)) {
         _mongosql_auth_set_error(plugin, "failed while reading zero-byte response to server");
         return;
     }
 
     /* read first auth-more-data */
-    MONGOSQL_AUTH_LOG("%s", "Reading first auth-more-data from server");
+    mongosql_auth_log("%s", "Reading first auth-more-data from server");
     pkt_len = plugin->vio->read_packet(plugin->vio, &pkt);
     if (pkt_len < 0) {
         _mongosql_auth_set_error(plugin, "failed while reading first auth-more-data");
@@ -102,11 +122,11 @@ _mongosql_auth_start(mongosql_auth_t *plugin,
     mechanism = (char*) pkt;
     /* set the plugin's num_conversations field */
     memcpy(&plugin->num_conversations, pkt+strlen(mechanism)+1, 4);
-    MONGOSQL_AUTH_LOG("    mechanism: %s", mechanism);
-    MONGOSQL_AUTH_LOG("    num_conversations: %u", plugin->num_conversations);
+    mongosql_auth_log("    mechanism: %s", mechanism);
+    mongosql_auth_log("    num_conversations: %u", plugin->num_conversations);
 
     /* allocate and initialize conversations */
-    MONGOSQL_AUTH_LOG("Initializing %d conversation structs", plugin->num_conversations);
+    mongosql_auth_log("Initializing %d conversation structs", plugin->num_conversations);
     plugin->conversations = calloc(plugin->num_conversations, sizeof(mongosql_auth_conversation_t));
     for (unsigned int i=0; i<plugin->num_conversations; i++) {
         _mongosql_auth_conversation_init(&plugin->conversations[i], username, password, mechanism, host);
@@ -123,7 +143,7 @@ _mongosql_auth_step(mongosql_auth_t *plugin) {
         return;
     }
 
-    MONGOSQL_AUTH_LOG("%s", "Stepping mongosql_auth protocol");
+    mongosql_auth_log("%s", "Stepping mongosql_auth protocol");
 
     /* step each individual conversation */
     for (unsigned int i=0; i<plugin->num_conversations; i++) {
@@ -144,7 +164,7 @@ _mongosql_auth_read_payload(mongosql_auth_t *plugin) {
         return;
     }
 
-    MONGOSQL_AUTH_LOG("%s", "Reading payload from server");
+    mongosql_auth_log("%s", "Reading payload from server");
 
     /* read server reply */
     pkt_len = plugin->vio->read_packet(plugin->vio, &pkt);
@@ -157,7 +177,7 @@ _mongosql_auth_read_payload(mongosql_auth_t *plugin) {
     for(unsigned int i=0; i<plugin->num_conversations; i++) {
         conv = &plugin->conversations[i];
         memcpy(&conv->buf_len, pkt, 4);
-        MONGOSQL_AUTH_LOG("received %zu bytes from server", conv->buf_len);
+        mongosql_auth_log("received %zu bytes from server", conv->buf_len);
         if (conv->buf_len > MONGOSQL_AUTH_MAX_BUF_SIZE) {
             _mongosql_auth_set_error(plugin, "received data size too large");
             return;
@@ -187,11 +207,11 @@ _mongosql_auth_write_payload(mongosql_auth_t *plugin) {
 
     /* if there is an error, stop */
     if (_mongosql_auth_has_error(plugin)) {
-        MONGOSQL_AUTH_LOG("%s", "Not writing payload: error already encountered");
+        mongosql_auth_log("%s", "Not writing payload: error already encountered");
         return;
     }
 
-    MONGOSQL_AUTH_LOG("%s", "Writing payload to server");
+    mongosql_auth_log("%s", "Writing payload to server");
 
     // To allocate a buffer for auth protocol payload, calulate the total size of all conversations.
     // Each buffer will be a different size.

@@ -17,17 +17,6 @@
 #ifndef MONGOSQL_AUTH_MISC_H
 #define MONGOSQL_AUTH_MISC_H
 
-#define MONGOSQL_AUTH_DEBUG @MONGOSQL_AUTH_DEBUG@
-#if MONGOSQL_AUTH_DEBUG != 1
-#  undef MONGOSQL_AUTH_DEBUG
-#endif
-
-#ifdef MONGOSQL_AUTH_DEBUG
-#define MONGOSQL_AUTH_LOG(format, ...) fprintf(stderr, "[DEBUG]  " format"\n", __VA_ARGS__);
-#else
-#define MONGOSQL_AUTH_LOG(format, ...)
-#endif
-
 /*
  * MONGOSQL_AUTH_ENABLE_SASL is set from configure to determine if we are
  * compiled with SASL support.

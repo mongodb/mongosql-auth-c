@@ -48,10 +48,10 @@ int mongosql_auth(MYSQL_PLUGIN_VIO *vio, MYSQL *mysql)
 
     status = plugin.status;
     if (status == CR_OK) {
-        MONGOSQL_AUTH_LOG("%s", "Authentication finished successfully");
+        mongosql_auth_log("%s", "Authentication finished successfully");
     } else {
-        MONGOSQL_AUTH_LOG("%s", "Authentication was unsuccessful");
-        MONGOSQL_AUTH_LOG("Error message: '%s'", plugin.error_msg);
+        mongosql_auth_log("%s", "Authentication was unsuccessful");
+        mongosql_auth_log("Error message: '%s'", plugin.error_msg);
     }
 
     _mongosql_auth_destroy(&plugin);

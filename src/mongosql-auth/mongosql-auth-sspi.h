@@ -56,4 +56,16 @@ int mongosql_auth_sspi_client_destroy(
     mongosql_auth_sspi_client *client
 );
 
+void mongosql_auth_sspi_log_error(
+    mongosql_auth_sspi_client *client,
+    const char *prefix,
+    char **errmsg
+);
+
+void mongosql_auth_sspi_error_desc(
+    int status,
+    char **desc
+);
+
+
 #endif /* MONGOSQL_AUTH_SSPI_H */

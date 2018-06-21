@@ -11,7 +11,7 @@ uint8_t _mongosql_auth_sasl_init(mongosql_auth_sasl_client* sasl,
 {
     int err;
     sasl->state = SASL_START;
-    MONGOSQL_AUTH_LOG("%s","    Initializing GSSAPI client");
+    mongosql_auth_log("%s","    Initializing GSSAPI client");
 
     if (errmsg) {
         *errmsg = NULL;
@@ -41,7 +41,7 @@ uint8_t _mongosql_auth_sasl_step(mongosql_auth_sasl_client* sasl,
         *error = NULL;
     }
 
-    MONGOSQL_AUTH_LOG("%s: %d","    Entering GSSAPI auth step. SASL state: ", sasl->state);
+    mongosql_auth_log("%s: %d","    Entering GSSAPI auth step. SASL state: ", sasl->state);
     switch (sasl->state) {
     case SASL_START:
         // Initiate the GSSAPI context with the server.
@@ -52,10 +52,10 @@ uint8_t _mongosql_auth_sasl_step(mongosql_auth_sasl_client* sasl,
                 outbuflen);
         if (status == GSSAPI_OK) {
             sasl->state = SASL_CONTEXT_COMPLETE;
-            MONGOSQL_AUTH_LOG("%s","      Done initiating context");
+            mongosql_auth_log("%s","      Done initiating context");
             return SASL_OK;
         } else if (status == GSSAPI_CONTINUE) {
-            MONGOSQL_AUTH_LOG("%s","      Continue neededed for GSSAPI auth");
+            mongosql_auth_log("%s","      Continue neededed for GSSAPI auth");
             return SASL_OK;
         } else {
             mongosql_auth_gssapi_log_error(&sasl->client, "negotiating with server", error);
@@ -93,7 +93,7 @@ uint8_t _mongosql_auth_sasl_step(mongosql_auth_sasl_client* sasl,
         sasl->state = SASL_DONE;
         return SASL_OK;
     case SASL_DONE:
-       MONGOSQL_AUTH_LOG("%s: %d","      Invalid state in sasl client", sasl->state);
+       mongosql_auth_log("%s: %d","      Invalid state in sasl client", sasl->state);
        return SASL_ERR; 
     }
     return SASL_ERR;
@@ -293,7 +293,7 @@ void mongosql_auth_gssapi_log_error(
     char *tmp = NULL;
     int status = mongosql_auth_gssapi_error_desc(client->maj_stat, client->min_stat, &tmp);
     if (status == GSSAPI_OK) {
-        MONGOSQL_AUTH_LOG("      GSSAPI Error %s: %s (%d, %d)", prefix, tmp, client->maj_stat, client->min_stat);
+        mongosql_auth_log("      GSSAPI Error %s: %s (%d, %d)", prefix, tmp, client->maj_stat, client->min_stat);
 
         // If errmsg is provided,  pass the buffer up to the caller. Discard otherwise.
         if (errmsg) {
@@ -302,7 +302,7 @@ void mongosql_auth_gssapi_log_error(
             free(tmp);
         }
     } else {
-        MONGOSQL_AUTH_LOG("      GSSAPI Error %s, but could not get description: (%d, %d)", prefix, client->maj_stat, client->min_stat);
+        mongosql_auth_log("      GSSAPI Error %s, but could not get description: (%d, %d)", prefix, client->maj_stat, client->min_stat);
     }
 }
 
@@ -383,7 +383,7 @@ int mongosql_auth_gssapi_client_init(
     client->spn = GSS_C_NO_NAME;
 
     // Get a the canonicalized name for the user principal
-    MONGOSQL_AUTH_LOG("%s: %s","      Canonicalizing name for user", username);
+    mongosql_auth_log("%s: %s","      Canonicalizing name for user", username);
     client->maj_stat = mongosql_auth_gssapi_canonicalize_name(
         &client->min_stat,
         username,
@@ -396,7 +396,7 @@ int mongosql_auth_gssapi_client_init(
     }
 
     // Get a canonicalized name for the service name principal
-    MONGOSQL_AUTH_LOG("%s: %s","      Canonicalizing name for SPN", target_spn);
+    mongosql_auth_log("%s: %s","      Canonicalizing name for SPN", target_spn);
     client->maj_stat = mongosql_auth_gssapi_canonicalize_name(
         &client->min_stat,
         target_spn,
@@ -413,7 +413,7 @@ int mongosql_auth_gssapi_client_init(
         // Use the provided password
         password_buffer.value = password;
         password_buffer.length = strlen(password);
-        MONGOSQL_AUTH_LOG("%s","      Acquiring credentials with password");
+        mongosql_auth_log("%s","      Acquiring credentials with password");
         client->maj_stat = gss_acquire_cred_with_password(
             &client->min_stat,  // minor_status
             client_name,        // desired_name
@@ -426,7 +426,7 @@ int mongosql_auth_gssapi_client_init(
             NULL                // time_rec
         );
     } else {
-        MONGOSQL_AUTH_LOG("%s","      Acquiring credentials");
+        mongosql_auth_log("%s","      Acquiring credentials");
         client->maj_stat = gss_acquire_cred(
             &client->min_stat,  // minor_status
             client_name,        // desired_name
@@ -495,7 +495,7 @@ int mongosql_auth_gssapi_client_negotiate(
         input_buffer.length = input_length;
     }
 
-    MONGOSQL_AUTH_LOG("%s","      Initiating GSS security context");
+    mongosql_auth_log("%s","      Initiating GSS security context");
     client->maj_stat = gss_init_sec_context(
         &client->min_stat,          // minor_status
         client->cred,               // initiator_cred_handle

@@ -129,10 +129,10 @@ _mongosql_auth_conversation_step(mongosql_auth_conversation_t *conv) {
     char *err;
 
     if (_mongosql_auth_conversation_is_done(conv)) {
-        MONGOSQL_AUTH_LOG("%s", "Not stepping conversation: already done");
+        mongosql_auth_log("%s", "Not stepping conversation: already done");
         return;
     } else if (_mongosql_auth_conversation_has_error(conv)) {
-        MONGOSQL_AUTH_LOG("%s", "Not stepping conversation: error already encountered");
+        mongosql_auth_log("%s", "Not stepping conversation: error already encountered");
         return;
     }
 
@@ -147,7 +147,7 @@ _mongosql_auth_conversation_step(mongosql_auth_conversation_t *conv) {
     } else {
 
         err = bson_strdup_printf("unsupported mechanism '%s'", conv->mechanism_name);
-        MONGOSQL_AUTH_LOG("%s", "Setting conversation error");
+        mongosql_auth_log("%s", "Setting conversation error");
         _mongosql_auth_conversation_set_error(conv, err);
         free(err);
     }
@@ -162,11 +162,11 @@ _mongosql_auth_conversation_scram_step(mongosql_auth_conversation_t *conv) {
     size_t outbuf_len = 0;
     mongoc_scram_t* scram = &conv->mechanism.scram;
 
-    MONGOSQL_AUTH_LOG("%s", "    Stepping mongosql_auth for SCRAM-SHA-1 mechanism");
+    mongosql_auth_log("%s", "    Stepping mongosql_auth for SCRAM-SHA-1 mechanism");
 
-    MONGOSQL_AUTH_LOG("%s", "    Server challenge:");
-    MONGOSQL_AUTH_LOG("        buf_len: %zu", conv->buf_len);
-    MONGOSQL_AUTH_LOG("        buf: %.*s", (int)conv->buf_len, conv->buf);
+    mongosql_auth_log("%s", "    Server challenge:");
+    mongosql_auth_log("        buf_len: %zu", conv->buf_len);
+    mongosql_auth_log("        buf: %.*s", (int)conv->buf_len, conv->buf);
 
     outbuf = malloc(MONGOSQL_SCRAM_MAX_BUF_SIZE);
     success = _mongoc_scram_step (
@@ -196,10 +196,10 @@ _mongosql_auth_conversation_scram_step(mongosql_auth_conversation_t *conv) {
         conv->done = 1;
     }
 
-    MONGOSQL_AUTH_LOG("%s", "    Client response:");
-    MONGOSQL_AUTH_LOG("        done: %d", conv->done);
-    MONGOSQL_AUTH_LOG("        buf_len: %zu", conv->buf_len);
-    MONGOSQL_AUTH_LOG("        buf: %.*s", (int)conv->buf_len, conv->buf);
+    mongosql_auth_log("%s", "    Client response:");
+    mongosql_auth_log("        done: %d", conv->done);
+    mongosql_auth_log("        buf_len: %zu", conv->buf_len);
+    mongosql_auth_log("        buf: %.*s", (int)conv->buf_len, conv->buf);
 }
 
 /* takes the input in buf as server input and creates the server output */
@@ -228,10 +228,10 @@ _mongosql_auth_conversation_sasl_step(mongosql_auth_conversation_t *conv) {
     size_t out_buf_len = 0;
     uint8_t success;
 
-    MONGOSQL_AUTH_LOG("%s", "    Stepping mongosql_auth for GSSAPI mechanism");
+    mongosql_auth_log("%s", "    Stepping mongosql_auth for GSSAPI mechanism");
 
-    MONGOSQL_AUTH_LOG("%s", "    Server challenge:");
-    MONGOSQL_AUTH_LOG("        buf_len: %zu", conv->buf_len);
+    mongosql_auth_log("%s", "    Server challenge:");
+    mongosql_auth_log("        buf_len: %zu", conv->buf_len);
 
     // On a successful return, out_buf will point to a allocated buffer that we must manage.
     // If an error occurs, 'error' will point to an string we must manage.
@@ -258,9 +258,9 @@ _mongosql_auth_conversation_sasl_step(mongosql_auth_conversation_t *conv) {
         conv->done = 1;
     }
 
-    MONGOSQL_AUTH_LOG("%s", "    Client response:");
-    MONGOSQL_AUTH_LOG("        done: %d", conv->done);
-    MONGOSQL_AUTH_LOG("        buf_len: %zu", out_buf_len);
+    mongosql_auth_log("%s", "    Client response:");
+    mongosql_auth_log("        done: %d", conv->done);
+    mongosql_auth_log("        buf_len: %zu", out_buf_len);
 
     // Replace the input buffer with the output buffer from the sasl step.
     conv->buf_len = out_buf_len;

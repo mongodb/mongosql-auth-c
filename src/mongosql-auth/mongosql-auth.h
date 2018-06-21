@@ -17,6 +17,7 @@
 #ifndef MONGOSQL_AUTH_H
 #define MONGOSQL_AUTH_H
 
+#include <stdarg.h>
 #include <mysql/client_plugin.h>
 #include <my_global.h>
 #include <stdint.h>
@@ -32,6 +33,9 @@ typedef struct mongosql_auth_t {
     mongosql_auth_conversation_t *conversations;
     MYSQL_PLUGIN_VIO *vio;
 } mongosql_auth_t;
+
+void
+mongosql_auth_log(const char *format,...);
 
 void
 _mongosql_auth_init(mongosql_auth_t *plugin, MYSQL_PLUGIN_VIO *vio);
