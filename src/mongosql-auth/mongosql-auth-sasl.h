@@ -52,12 +52,14 @@ uint8_t _mongosql_auth_sasl_init(mongosql_auth_sasl_client* sasl,
                                  char* password,
                                  char* target_spn,
                                  char** error);
+
 uint8_t _mongosql_auth_sasl_step(mongosql_auth_sasl_client* sasl,
                                   uint8_t *inbuf,
                                   size_t inbuflen,
                                   uint8_t **outbuf,
                                   size_t *outbuflen,
                                   char **error);
+
 uint8_t _mongosql_auth_sasl_destroy(mongosql_auth_sasl_client* sasl);
 
 #endif /* MONGOSQL_AUTH_SASL_H */

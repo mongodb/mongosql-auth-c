@@ -46,6 +46,7 @@ typedef struct mongosql_auth_conversation_t {
     size_t buf_len;
     char* error_msg;
     int status;
+    uint8_t server_key[MONGOC_SCRAM_HASH_MAX_SIZE];
 } mongosql_auth_conversation_t;
 
 void

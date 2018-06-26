@@ -23,5 +23,5 @@ ELSE()
     endif()
 ENDIF()
 
-MESSAGE(STATUS "using kerberos library: ${MONGO_KRB_LIBS}")
+MESSAGE(STATUS "Using kerberos library: ${MONGO_KRB_LIBS}")
 set(MONGOSQL_AUTH_ENABLE_SASL 1)

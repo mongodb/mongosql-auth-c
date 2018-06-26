@@ -17,8 +17,6 @@
     pkill -9 mongos
     pkill -9 mongosqld
     pkill -9 -f mongo-orchestration
-    pkill -9 sqlproxy
-    pkill -9 mongosqld
     echo "done cleaning up processes"
 
     echo "cleaning up repo..."
@@ -27,7 +25,7 @@
     echo "done cleaning up repo"
 
     echo "setting up repo for testing..."
-    mkdir -p $ARTIFACTS_DIR/{build,log,sqlproxy}
+    mkdir -p $ARTIFACTS_DIR/{build,log,mongosqld}
     echo "done setting up repo for testing"
 
     exit 0

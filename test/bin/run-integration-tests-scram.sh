@@ -9,8 +9,8 @@
         --port 3307 \
         --plugin-dir=$ARTIFACTS_DIR/build/ \
         --default-auth=mongosql_auth \
-        --user=bob \
-        --password=pwd123 \
+        --user=$USERNAME \
+        --password=$PASSWORD \
         --execute=exit"
     exec $cmd
 ) 2>&1 | tee $LOG_FILE

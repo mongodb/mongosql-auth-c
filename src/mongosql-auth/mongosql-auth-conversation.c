@@ -56,9 +56,18 @@ _mongosql_auth_conversation_init(mongosql_auth_conversation_t *conv,
     conv->buf_len = 0;
     conv->error_msg = NULL;
 
+    #if defined(MONGOC_ENABLE_CRYPTO_CNG)
+        mongoc_crypto_cng_init ();
+    #endif
+
     if (strcmp(conv->mechanism_name, "SCRAM-SHA-1") == 0) {
         /* initialize the scram struct */
-        _mongoc_scram_init(&conv->mechanism.scram);
+        _mongoc_scram_init(&conv->mechanism.scram, MONGOC_CRYPTO_ALGORITHM_SHA_1);
+        _mongoc_scram_set_user(&conv->mechanism.scram, conv->username);
+        _mongoc_scram_set_pass(&conv->mechanism.scram, conv->password);
+    } else if (strcmp(conv->mechanism_name, "SCRAM-SHA-256") == 0) {
+        /* initialize the scram struct */
+        _mongoc_scram_init(&conv->mechanism.scram, MONGOC_CRYPTO_ALGORITHM_SHA_256);
         _mongoc_scram_set_user(&conv->mechanism.scram, conv->username);
         _mongoc_scram_set_pass(&conv->mechanism.scram, conv->password);
 #ifdef MONGOSQL_AUTH_ENABLE_SASL
@@ -102,14 +111,16 @@ void
 _mongosql_auth_conversation_destroy(mongosql_auth_conversation_t *conv) {
 
     /* destroy the scram struct */
-    if (strcmp(conv->mechanism_name, "SCRAM-SHA-1") == 0) {
-        _mongoc_scram_destroy(&conv->mechanism.scram);
+    if (strcmp(conv->mechanism_name, "SCRAM-SHA-1") == 0 ||
+        strcmp(conv->mechanism_name, "SCRAM-SHA-256") == 0) {
 #ifdef MONGOSQL_AUTH_ENABLE_SASL
     } else if (strcmp(conv->mechanism_name, "GSSAPI") == 0) {
         _mongosql_auth_sasl_destroy(&conv->mechanism.sasl);
 #endif
     }
-
+    #if defined(MONGOC_ENABLE_CRYPTO_CNG)
+        mongoc_crypto_cng_cleanup ();
+    #endif
     /* zero the password's memory */
     memset(conv->password, 0, strlen(conv->password));
 
@@ -136,16 +147,16 @@ _mongosql_auth_conversation_step(mongosql_auth_conversation_t *conv) {
         return;
     }
 
-    if(strcmp(conv->mechanism_name, "SCRAM-SHA-1") == 0) {
+    if (strcmp(conv->mechanism_name, "SCRAM-SHA-1") == 0 ||
+        strcmp(conv->mechanism_name, "SCRAM-SHA-256") == 0) {
         _mongosql_auth_conversation_scram_step(conv);
-    } else if(strcmp(conv->mechanism_name, "PLAIN") == 0) {
+    } else if (strcmp(conv->mechanism_name, "PLAIN") == 0) {
         _mongosql_auth_conversation_plain_step(conv);
 #ifdef MONGOSQL_AUTH_ENABLE_SASL
     } else if (strcmp(conv->mechanism_name, "GSSAPI") == 0) {
         _mongosql_auth_conversation_sasl_step(conv);
 #endif
     } else {
-
         err = bson_strdup_printf("unsupported mechanism '%s'", conv->mechanism_name);
         mongosql_auth_log("%s", "Setting conversation error");
         _mongosql_auth_conversation_set_error(conv, err);
@@ -162,9 +173,9 @@ _mongosql_auth_conversation_scram_step(mongosql_auth_conversation_t *conv) {
     size_t outbuf_len = 0;
     mongoc_scram_t* scram = &conv->mechanism.scram;
 
-    mongosql_auth_log("%s", "    Stepping mongosql_auth for SCRAM-SHA-1 mechanism");
+    mongosql_auth_log("Stepping mongosql_auth for '%s' mechanism", conv->mechanism_name);
 
-    mongosql_auth_log("%s", "    Server challenge:");
+    mongosql_auth_log("    Server challenge (%zu):", scram->step);
     mongosql_auth_log("        buf_len: %zu", conv->buf_len);
     mongosql_auth_log("        buf: %.*s", (int)conv->buf_len, conv->buf);
 
@@ -178,6 +189,7 @@ _mongosql_auth_conversation_scram_step(mongosql_auth_conversation_t *conv) {
         (uint32_t*) &outbuf_len,
         &error
     );
+
     // Free the input buffer.
     if (conv->buf) {
         free(conv->buf);
@@ -196,7 +208,7 @@ _mongosql_auth_conversation_scram_step(mongosql_auth_conversation_t *conv) {
         conv->done = 1;
     }
 
-    mongosql_auth_log("%s", "    Client response:");
+    mongosql_auth_log("    Client response (%zu):", scram->step);
     mongosql_auth_log("        done: %d", conv->done);
     mongosql_auth_log("        buf_len: %zu", conv->buf_len);
     mongosql_auth_log("        buf: %.*s", (int)conv->buf_len, conv->buf);

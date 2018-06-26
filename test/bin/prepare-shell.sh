@@ -24,13 +24,13 @@ fi
 ARTIFACTS_DIR="$PROJECT_DIR/test/artifacts"
 LOG_FILE="$ARTIFACTS_DIR/log/${basename%.sh}.log"
 mkdir -p "$ARTIFACTS_DIR/log"
+# boost variables
 BOOST_DIR="boost_1_59_0"
 BOOST_FILE="$BOOST_DIR.tar.gz"
 FULL_BOOST_DIR_PATH="$ARTIFACTS_DIR/$BOOST_DIR"
 BOOST_S3_URL="http://noexpire.s3.amazonaws.com/sqlproxy/sources/$BOOST_FILE"
 
-
-export SQLPROXY_DOWNLOAD_DIR="$ARTIFACTS_DIR/sqlproxy"
+export MONGOSQLD_DOWNLOAD_DIR="$ARTIFACTS_DIR/mongosqld"
 export MONGO_ORCHESTRATION_HOME="$ARTIFACTS_DIR/orchestration"
 
 CMAKE_ARGS="-DWITH_BOOST=$FULL_BOOST_DIR_PATH"
@@ -41,11 +41,11 @@ fi
 
 if [ "Windows_NT" = "$OS" ]; then
     bison_path="/cygdrive/c/bison/bin"
-    export PATH="$PATH:$bison_path"
     BUILD='MSBuild.exe MySQL.sln'
     PLUGIN_LIBRARY="$ARTIFACTS_DIR/mysql-server/bld/Debug/mongosql_auth.dll"
     UNIT_TESTS="$ARTIFACTS_DIR/mysql-server/bld/Debug/mongosql_auth_unit_tests.exe"
     MYSQL="$ARTIFACTS_DIR/mysql-server/bld/client/Debug/mysql.exe"
+    export PATH="$PATH:$bison_path"
 else
     BUILD="make mongosql_auth mongosql_auth_so mongosql_auth_unit_tests mysql"
     PLUGIN_LIBRARY="$ARTIFACTS_DIR/mysql-server/bld/mongosql_auth.so"

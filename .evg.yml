@@ -28,7 +28,8 @@ buildvariants:
       run_on: linux-64-amzn-build
     - name: unit_tests
     - name: integration_tests_plain
-    - name: integration_tests_scram
+    - name: integration_tests_scram_sha_1
+    - name: integration_tests_scram_sha_256
     - name: integration_tests_gssapi
   matrix_spec:
     os: "*"
@@ -85,7 +86,7 @@ tasks:
     - func: "build mongosql_auth"
     - func: "run plain integration tests"
 
-- name: integration_tests_scram
+- name: integration_tests_scram_sha_1
   exec_timeout_secs: 14400 # 4h
   commands:
     - func: "install dependencies"
@@ -95,6 +96,21 @@ tasks:
     - func: "start mongo-orchestration"
     - func: "build mongosql_auth"
     - func: "run scram integration tests"
+      vars:
+        var_auth_mechanism: SCRAM-SHA-1
+
+- name: integration_tests_scram_sha_256
+  exec_timeout_secs: 14400 # 4h
+  commands:
+    - func: "install dependencies"
+    - func: "start mongosqld"
+      vars:
+        var_auth_mechanism: SCRAM-SHA-256
+    - func: "start mongo-orchestration"
+    - func: "build mongosql_auth"
+    - func: "run scram integration tests"
+      vars:
+        var_auth_mechanism: SCRAM-SHA-256
 
 - name: integration_tests_gssapi
   exec_timeout_secs: 14400 # 4h
@@ -225,6 +241,17 @@ functions:
       params:
         script: |
           ${PREPARE_SHELL}
+          export USERNAME=bob
+          export PASSWORD=pwd123
+          if test ${var_auth_mechanism} = "SCRAM-SHA-256"; then
+            export USERNAME=bob256
+            export PASSWORD=pwd256
+            export MECHANISM=${var_auth_mechanism}
+            export MONGO_CLIENT_ARGS="-u bob -p pwd123 --authenticationDatabase admin"
+            export MONGO_OTHER_USER_ROLES="[{role: 'root', db: 'admin'}]"
+            ${SCRIPT_DIR}/create-user.sh
+            export USERNAME=$USERNAME"?mechanism="$MECHANISM
+          fi
           ${SCRIPT_DIR}/run-integration-tests-scram.sh
 
   "run gssapi integration tests":
@@ -286,15 +313,15 @@ functions:
           export AWS_ACCESS_KEY_ID=${aws_key}
           export AWS_SECRET_ACCESS_KEY=${aws_secret}
           # the SCRAM tests use mongo orchestration
-          if test ${var_auth_mechanism} = "SCRAM-SHA-1"; then
+          if test ${var_auth_mechanism} = "SCRAM-SHA-1" || test ${var_auth_mechanism} = "SCRAM-SHA-256"; then
             export MONGO_USERNAME=bob
             export MONGO_PASSWORD=pwd123
           else
-            export MONGO_USERNAME=${admin_username}
+            export MONGO_USERNAME="${admin_username}"
             export MONGO_PASSWORD="${admin_password}"
           fi
           export MONGO_URI=${var_mongodb_uri|--mongo-uri=127.0.0.1}
-          ${SCRIPT_DIR}/start-sqlproxy.sh
+          ${SCRIPT_DIR}/start-mongosqld.sh
 
   "upload artifacts":
     - command: s3.put
@@ -379,7 +406,7 @@ functions:
         optional: true
         aws_key: ${aws_key}
         aws_secret: ${aws_secret}
-        local_file: mongosql-auth-c/test/artifacts/go/src/github.com/10gen/sqlproxy/testdata/artifacts/log/mongosqld.log
+        local_file: mongosql-auth-c/test/artifacts/go/src/github.com/10gen/mongosqld/testdata/artifacts/log/mongosqld.log
         remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/mongosqld.log
         content_type: text/plain
         bucket: mciuploads
@@ -421,23 +448,23 @@ functions:
         optional: true
         aws_key: ${aws_key}
         aws_secret: ${aws_secret}
-        local_file: mongosql-auth-c/test/artifacts/log/start-sqlproxy.log
-        remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/start-sqlproxy.log
+        local_file: mongosql-auth-c/test/artifacts/log/start-mongosqld.log
+        remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/start-mongosqld.log
         content_type: text/plain
         bucket: mciuploads
         permissions: public-read
-        display_name: "start-sqlproxy.log"
+        display_name: "start-mongosqld.log"
     - command: s3.put
       params:
         optional: true
         aws_key: ${aws_key}
         aws_secret: ${aws_secret}
-        local_file: mongosql-auth-c/test/artifacts/log/sqlproxy.log
-        remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/sqlproxy.log
+        local_file: mongosql-auth-c/test/artifacts/log/mongosqld.log
+        remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/mongosqld.log
         content_type: text/plain
         bucket: mciuploads
         permissions: public-read
-        display_name: "sqlproxy.log"
+        display_name: "mongosqld.log"
     - command: s3.put
       params:
         optional: true

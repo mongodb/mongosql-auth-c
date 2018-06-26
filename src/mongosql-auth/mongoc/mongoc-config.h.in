@@ -47,4 +47,13 @@
 #define MONGOC_LOG(format, ...)
 #endif
 
+/*
+ * Set if we have ICU support.
+ */
+#define MONGOC_ENABLE_ICU @MONGOC_ENABLE_ICU@
+
+#if MONGOC_ENABLE_ICU != 1
+#  undef MONGOC_ENABLE_ICU
+#endif
+
 #endif /* MONGOC_CONFIG_H */

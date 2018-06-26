@@ -23,10 +23,10 @@
 
 void
 mongosql_auth_log(const char *format,...) {
-	char *debug_var;
+    char *debug_var;
     va_list args;
 
-	debug_var = getenv("MONGOSQL_AUTH_DEBUG");
+    debug_var = getenv("MONGOSQL_AUTH_DEBUG");
     if (!debug_var || strcmp(debug_var, "") == 0 || strcmp(debug_var, "0") == 0) {
         va_end(args);
         return;

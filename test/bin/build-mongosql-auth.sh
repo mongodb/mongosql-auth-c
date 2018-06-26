@@ -57,16 +57,16 @@ EOF
         echo "done clobbering build directory"
     fi
 
-    # now build the plugin
-
     cd $ARTIFACTS_DIR
-    echo "downloading boost..."
+
+    # download boost
     if [ ! -d $BOOST_DIR ]; then
+        echo "downloading boost..."
         curl -S $BOOST_S3_URL > $BOOST_FILE
         tar xvzf $BOOST_FILE
     fi
-    cd -
 
+    cd $ARTIFACTS_DIR/mysql-server
     mkdir -p bld
     cd bld
 

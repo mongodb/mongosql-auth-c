@@ -34,18 +34,18 @@ test_connect() {
         exit 1
     fi
 
-    # This test depends on a make target of sqlproxy that includes a private keytab file,
+    # This test depends on a make target of mongosqld that includes a private keytab file,
     # so we must pull it and build manually.
-    SQLPROXY_DIR="${ARTIFACTS_DIR}/go/src/github.com/10gen/sqlproxy"
-    if [ ! -d $SQLPROXY_DIR ]; then
-        echo "cloning sqlproxy repo"
-        mkdir -p $SQLPROXY_DIR
-        git clone git@github.com:10gen/sqlproxy.git ${SQLPROXY_DIR}
+    MONGOSQLD_DIR="${ARTIFACTS_DIR}/go/src/github.com/10gen/sqlproxy"
+    if [ ! -d $MONGOSQLD_DIR ]; then
+        echo "cloning mongosqld repo"
+        mkdir -p $MONGOSQLD_DIR
+        git clone git@github.com:10gen/sqlproxy.git ${MONGOSQLD_DIR}
     fi
-    cd $SQLPROXY_DIR 
+    cd $MONGOSQLD_DIR
     git fetch
 
-    echo "building sqlproxy on variant $VARIANT"
+    echo "building mongosqld on variant $VARIANT"
     export BUILD_TAGS="$BUILD_TAGS gssapi"
     make clean build-mongosqld run-mongosqld-gssapi-right-username-right-password
 

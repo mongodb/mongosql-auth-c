@@ -5,19 +5,19 @@
 (
     set -o errexit
 
-    echo "downloading sqlproxy..."
-    python $PROJECT_DIR/test/bin/download-sqlproxy.py
-    echo "done downloading sqlproxy"
+    echo "downloading mongosqld..."
+    python $PROJECT_DIR/test/bin/download-mongosqld.py
+    echo "done downloading mongosqld"
 
-    echo "unpacking sqlproxy..."
-    cd $SQLPROXY_DOWNLOAD_DIR
+    echo "unpacking mongosqld..."
+    cd $MONGOSQLD_DOWNLOAD_DIR
     if [ "Windows_NT" = "$OS" ]; then
-        msiexec /i sqlproxy /qn /log $ARTIFACTS_DIR/log/mongosql-install.log
+        msiexec /i mongosqld /qn /log $ARTIFACTS_DIR/log/mongosql-install.log
         sleep 2
     else
-        tar xzvf sqlproxy
+        tar xzvf mongosqld
     fi
-    echo "done unpacking sqlproxy"
+    echo "done unpacking mongosqld"
 
     if [ "Windows_NT" = "$OS" ]; then
         echo "stopping and deleting existing mongosql service..."
@@ -27,14 +27,14 @@
         echo "stopped and deleted existing mongosql service"
     fi
 
-    echo "starting sqlproxy..."
+    echo "starting mongosqld..."
     if [ "Windows_NT" = "$OS" ]; then
         echo "  ...installing mongosql service"
         cd "/cygdrive/c/Program Files/MongoDB/Connector for BI/2.4/bin"
             ./mongosqld.exe install \
             $MONGO_URI \
-            --logPath $ARTIFACTS_DIR/log/sqlproxy.log \
-            --schema $PROJECT_DIR/test/resources/sqlproxy \
+            --logPath $ARTIFACTS_DIR/log/mongosqld.log \
+            --schema $PROJECT_DIR/test/resources/mongosqld \
             --auth \
             -vv \
             --mongo-username $MONGO_USERNAME \
@@ -46,14 +46,14 @@
         cd bin
         nohup ./mongosqld \
             $MONGO_URI \
-            --logPath $ARTIFACTS_DIR/log/sqlproxy.log \
-            --schema $PROJECT_DIR/test/resources/sqlproxy \
+            --logPath $ARTIFACTS_DIR/log/mongosqld.log \
+            --schema $PROJECT_DIR/test/resources/mongosqld \
             --auth \
             -vv \
             --mongo-username $MONGO_USERNAME \
             --mongo-password $MONGO_PASSWORD &
     fi
-    echo "done starting sqlproxy"
+    echo "done starting mongosqld"
     sleep 5
 # redirect stdin and stdout to a file instead of piping to tee so that we do
 # not need to run this as a background task.

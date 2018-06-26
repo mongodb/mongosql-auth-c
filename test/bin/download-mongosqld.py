@@ -10,12 +10,12 @@ import urllib2
 def download_binary(build_variant):
     """Downloads a binary from Amazon's S3.
     """
-    file_name = "sqlproxy"
+    file_name = "mongosqld"
     extension = "msi" if "win" in build_variant else "tgz"
     url = "https://s3.amazonaws.com/info-mongodb-com/mongodb-bi/v2/latest/mongodb-bi-%s-latest.%s" % (build_variant, extension)
     print url
     data = urllib2.urlopen(url)
-    file_path = open(os.path.join(os.environ.get('SQLPROXY_DOWNLOAD_DIR'), file_name), 'wb')
+    file_path = open(os.path.join(os.environ.get('MONGOSQLD_DOWNLOAD_DIR'), file_name), 'wb')
     meta = data.info()
     file_size = int(meta.getheaders("Content-Length")[0])
     block_sz = 8192
@@ -42,16 +42,16 @@ def ensure_env():
     if os.environ.get('AWS_SECRET_ACCESS_KEY', None) is None:
         print("Can't find 'AWS_SECRET_ACCESS_KEY' in environment variables")
         sys.exit(1)
-    if os.environ.get('SQLPROXY_DOWNLOAD_DIR', None) is None:
-        print("Can't find 'SQLPROXY_DOWNLOAD_DIR' in environment variables")
+    if os.environ.get('MONGOSQLD_DOWNLOAD_DIR', None) is None:
+        print("Can't find 'MONGOSQLD_DOWNLOAD_DIR' in environment variables")
         sys.exit(1)
-    if os.environ.get('SQLPROXY_BUILD_VARIANT', None) is None:
-        print("Can't find 'SQLPROXY_BUILD_VARIANT' in environment variables")
+    if os.environ.get('MONGOSQLD_BUILD_VARIANT', None) is None:
+        print("Can't find 'MONGOSQLD_BUILD_VARIANT' in environment variables")
         sys.exit(1)
 
 
 if __name__ == '__main__':
     ensure_env()
-    build_variant = os.getenv('SQLPROXY_BUILD_VARIANT')
+    build_variant = os.getenv('MONGOSQLD_BUILD_VARIANT')
     print("downloading build variant '%s'" % (build_variant))
     download_binary(build_variant)

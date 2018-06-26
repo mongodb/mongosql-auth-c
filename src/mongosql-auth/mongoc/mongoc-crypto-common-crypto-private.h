@@ -28,13 +28,27 @@ mongoc_crypto_common_crypto_hmac_sha1 (mongoc_crypto_t *crypto,
                                        int key_len,
                                        const unsigned char *d,
                                        int n,
-                                       unsigned char *md /* OUT */);
+                                       unsigned char *hmac_out);
 
 my_bool
 mongoc_crypto_common_crypto_sha1 (mongoc_crypto_t *crypto,
                                   const unsigned char *input,
                                   const size_t input_len,
-                                  unsigned char *output /* OUT */);
+                                  unsigned char *output);
+
+void
+mongoc_crypto_common_crypto_hmac_sha256 (mongoc_crypto_t *crypto,
+                                       const void *key,
+                                       int key_len,
+                                       const unsigned char *d,
+                                       int n,
+                                       unsigned char *hmac_out);
+
+my_bool
+mongoc_crypto_common_crypto_sha256 (mongoc_crypto_t *crypto,
+                                  const unsigned char *input,
+                                  const size_t input_len,
+                                  unsigned char *output);
 
 #endif /* MONGOC_CRYPTO_COMMON_CRYPTO_PRIVATE_H */
 #endif /* MONGOC_ENABLE_CRYPTO_COMMON_CRYPTO */
