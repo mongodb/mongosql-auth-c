@@ -78,3 +78,7 @@ if(-not $?) {
     $objDir\DocumentationFragment.wixobj `
     $objDir\ConfigFragment.wixobj `
     $objDir\UIFragment.wixobj
+
+if(-not $?) {
+    exit 1
+}

@@ -5,7 +5,7 @@
       <Component Id="c_License" Guid="a7e36faa-c54b-44cd-9686-6094ce141d7c">
         <File Id="f_License"
               Name="LICENSE.txt"
-              Source="$(var.SourceDir)\LICENSE"
+              Source="$(var.SourceDir)\LICENSE-APACHE"
               DiskId ="1"
               KeyPath="yes" />
       </Component>
