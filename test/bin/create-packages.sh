@@ -30,7 +30,7 @@
 
         # build the msi. Since this is windows only, we know powershell is installed.
         SEMVER=$(git describe --always --abbrev=0)
-        SEMVER=1.0.0
+        echo "Version is $SEMVER"
         powershell.exe \
             -NoProfile \
             -NoLogo \
