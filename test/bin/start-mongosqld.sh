@@ -30,7 +30,8 @@
     echo "starting mongosqld..."
     if [ "Windows_NT" = "$OS" ]; then
         echo "  ...installing mongosql service"
-        cd "/cygdrive/c/Program Files/MongoDB/Connector for BI/2.4/bin"
+        LATEST_DIR=$(ls -v /cygdrive/c/Program\ Files/MongoDB/Connector\ for\ BI/ | tail -n 1)
+        cd /cygdrive/c/Program\ Files/MongoDB/Connector\ for\ BI/"$LATEST_DIR"/bin
             ./mongosqld.exe install \
             $MONGO_URI \
             --logPath $ARTIFACTS_DIR/log/mongosqld.log \

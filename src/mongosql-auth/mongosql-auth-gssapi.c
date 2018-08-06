@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdio.h>
+#include "mongosql-auth.h"
 #include "mongosql-auth-conversation.h"
 #include "mongosql-auth-gssapi.h"
 

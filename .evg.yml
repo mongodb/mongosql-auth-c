@@ -584,6 +584,11 @@ axes:
     run_on: ubuntu1404-build
     variables:
       variant: ubuntu1404-64
+  - id: ubuntu1604-64
+    display_name: Ubuntu 16.04
+    run_on: ubuntu1604-build
+    variables:
+      variant: ubuntu1604-64
   - id: rhel70
     display_name: RHEL 7.0
     variables:

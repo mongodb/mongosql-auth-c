@@ -93,6 +93,10 @@ MYSQL_ADD_PLUGIN(
     MANDATORY
 )
 
+IF(UNIX)
+  target_compile_options(mongosql_auth PUBLIC "$<1:-fPIC>")
+ENDIF()
+
 MYSQL_ADD_PLUGIN(
     mongosql_auth_so
     ${PLUGIN_SOURCE_FILES}

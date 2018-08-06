@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include "mongosql-auth.h"
 #include "mongosql-auth-conversation.h"
 #include "mongosql-auth-sasl.h"
 #include "mongoc/mongoc-b64.h"

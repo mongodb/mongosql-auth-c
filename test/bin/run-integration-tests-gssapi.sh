@@ -70,7 +70,7 @@ test_connect() {
     # Test providing a client keytab with an environment variable.
     # This test does not work on MacOS Heimdal Kerberos.
     case $VARIANT in
-    ubuntu1404*|rhel*)
+    ubuntu*|rhel*)
         kdestroy
         export KRB5_CLIENT_KTNAME=$GSSAPI_KTNAME
         password=""
