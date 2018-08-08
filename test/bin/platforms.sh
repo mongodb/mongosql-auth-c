@@ -10,7 +10,7 @@ ubuntu1404-64)
     ;;
 ubuntu1604-64)
     export CC='/opt/mongodbtoolchain/v2/bin/clang'
-    export SQLPROXY_BUILD_VARIANT='linux-x86_64-ubuntu-1604'
+    export MONGOSQLD_BUILD_VARIANT='linux-x86_64-ubuntu-1604'
     CMAKE_PATH='/opt/cmake/bin'
     PUSH_ARCH='x86_64-ubuntu-1604'
     PUSH_NAME='linux'
