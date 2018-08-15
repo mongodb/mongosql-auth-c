@@ -2,21 +2,18 @@ echo "VARIANT=$VARIANT"
 
 case $VARIANT in
 ubuntu1404-64)
-    export CC='/opt/mongodbtoolchain/v2/bin/clang'
     export MONGOSQLD_BUILD_VARIANT='linux-x86_64-ubuntu-1404'
     CMAKE_PATH='/opt/cmake/bin'
     PUSH_ARCH='x86_64-ubuntu-1404'
     PUSH_NAME='linux'
     ;;
 ubuntu1604-64)
-    export CC='/opt/mongodbtoolchain/v2/bin/clang'
     export MONGOSQLD_BUILD_VARIANT='linux-x86_64-ubuntu-1604'
     CMAKE_PATH='/opt/cmake/bin'
     PUSH_ARCH='x86_64-ubuntu-1604'
     PUSH_NAME='linux'
     ;;
 rhel70)
-    export CC='/opt/mongodbtoolchain/v2/bin/clang'
     export MONGOSQLD_BUILD_VARIANT='linux-x86_64-rhel70'
     CMAKE_PATH='/opt/cmake/bin'
     PUSH_ARCH='x86_64-rhel70'

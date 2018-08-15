@@ -243,10 +243,10 @@ functions:
           ${PREPARE_SHELL}
           export USERNAME=bob
           export PASSWORD=pwd123
-          if test ${var_auth_mechanism} = "SCRAM-SHA-256"; then
+          if test "${var_auth_mechanism}" = "SCRAM-SHA-256"; then
             export USERNAME=bob256
             export PASSWORD=pwd256
-            export MECHANISM=${var_auth_mechanism}
+            export MECHANISM="${var_auth_mechanism}"
             export MONGO_CLIENT_ARGS="-u bob -p pwd123 --authenticationDatabase admin"
             export MONGO_OTHER_USER_ROLES="[{role: 'root', db: 'admin'}]"
             ${SCRIPT_DIR}/create-user.sh
@@ -313,7 +313,7 @@ functions:
           export AWS_ACCESS_KEY_ID=${aws_key}
           export AWS_SECRET_ACCESS_KEY=${aws_secret}
           # the SCRAM tests use mongo orchestration
-          if test ${var_auth_mechanism} = "SCRAM-SHA-1" || test ${var_auth_mechanism} = "SCRAM-SHA-256"; then
+          if test "${var_auth_mechanism}" = "SCRAM-SHA-1" || test "${var_auth_mechanism}" = "SCRAM-SHA-256"; then
             export MONGO_USERNAME=bob
             export MONGO_PASSWORD=pwd123
           else
