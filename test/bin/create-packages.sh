@@ -28,6 +28,13 @@
             THIRD_PARTY_NOTICES \
             $build_dir\\mongosql_auth.dll
 
+        # determine if this is 32 or 64-bit build.
+        if [ "windows-32" = "$VARIANT" ]; then        
+            arch="x86"
+        else
+            arch="x64"
+        fi
+
         # build the msi. Since this is windows only, we know powershell is installed.
         SEMVER=$(git describe --always --abbrev=0)
         echo "Version is $SEMVER"
@@ -39,7 +46,8 @@
             -ProgramFilesFolder "$PROGRAM_FILES_FOLDER" \
             -ProjectName "MongoSQL Auth Plugin" \
             -VersionLabel "$SEMVER" \
-            -WixPath "$WIX\\bin"
+            -WixPath "$WIX\\bin" \
+            -Arch "$arch"
 
     else
 

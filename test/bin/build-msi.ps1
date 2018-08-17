@@ -12,12 +12,15 @@
     project.
 .PARAMETER WixPath
     The path to the WIX binaries.
+.PARAMETER Arch
+    The binary arcitecture we're building: 'x86' or 'x64'.
 #>
 Param(
   [string]$ProgramFilesFolder,
   [string]$ProjectName,
   [string]$VersionLabel,
-  [string]$WixPath
+  [string]$WixPath,
+  [string]$Arch
 )
 
 $wixUiExt = "$WixPath\WixUIExtension.dll"
@@ -53,7 +56,7 @@ $upgradeCode = "3f021824-c333-49f5-9cbf-d6de9b6adacc"
     -dTargetFileName="release" `
     -dOutDir="$objDir" `
     -dConfiguration="Release" `
-    -arch "x64" `
+    -arch "$Arch" `
     -out "$objDir" `
     -ext "$wixUiExt" `
     "$resourceDir\Product.wxs" `
