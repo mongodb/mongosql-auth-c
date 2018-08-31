@@ -15,7 +15,7 @@
     if [ ! -d "mysql-server" ]; then
         # clone mysql-server and checkout the right commit
         echo "cloning mysql-server..."
-        git clone https://github.com/mysql/mysql-server
+        git clone -b mysql-5.7.23 --single-branch --depth=1 https://github.com/mysql/mysql-server
         echo "done cloning mysql-server"
     fi
 
@@ -63,7 +63,7 @@ EOF
     if [ ! -d $BOOST_DIR ]; then
         echo "downloading boost..."
         curl -S $BOOST_S3_URL > $BOOST_FILE
-        tar xvzf $BOOST_FILE
+        tar xzf $BOOST_FILE
     fi
 
     cd $ARTIFACTS_DIR/mysql-server

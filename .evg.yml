@@ -55,6 +55,7 @@ tasks:
   exec_timeout_secs: 14400 # 4h
   commands:
     - func: "install dependencies"
+    - func: "build icu"
     - func: "build mongosql_auth"
       vars:
         release: true
@@ -73,6 +74,7 @@ tasks:
   exec_timeout_secs: 14400 # 4h
   commands:
     - func: "install dependencies"
+    - func: "build icu"
     - func: "build mongosql_auth"
     - func: "run unit tests"
 
@@ -83,6 +85,7 @@ tasks:
     - func: "start mongosqld"
       vars:
         var_mongodb_uri: --mongo-uri=ldaptest.10gen.cc
+    - func: "build icu"
     - func: "build mongosql_auth"
     - func: "run plain integration tests"
 
@@ -94,6 +97,7 @@ tasks:
       vars:
         var_auth_mechanism: SCRAM-SHA-1
     - func: "start mongo-orchestration"
+    - func: "build icu"
     - func: "build mongosql_auth"
     - func: "run scram integration tests"
       vars:
@@ -107,6 +111,7 @@ tasks:
       vars:
         var_auth_mechanism: SCRAM-SHA-256
     - func: "start mongo-orchestration"
+    - func: "build icu"
     - func: "build mongosql_auth"
     - func: "run scram integration tests"
       vars:
@@ -116,10 +121,19 @@ tasks:
   exec_timeout_secs: 14400 # 4h
   commands:
     - func: "install dependencies"
+    - func: "build icu"
     - func: "build mongosql_auth"
     - func: "run gssapi integration tests"
 
 functions:
+
+  "build icu":
+    command: shell.exec
+    type: test
+    params:
+      script: |
+          ${PREPARE_SHELL}
+          ${SCRIPT_DIR}/build-icu.sh
 
   "build mongosql_auth":
     command: shell.exec
@@ -245,7 +259,7 @@ functions:
           export PASSWORD=pwd123
           if test "${var_auth_mechanism}" = "SCRAM-SHA-256"; then
             export USERNAME=bob256
-            export PASSWORD=pwd256
+            export PASSWORD=pwd↔256
             export MECHANISM="${var_auth_mechanism}"
             export MONGO_CLIENT_ARGS="-u bob -p pwd123 --authenticationDatabase admin"
             export MONGO_OTHER_USER_ROLES="[{role: 'root', db: 'admin'}]"

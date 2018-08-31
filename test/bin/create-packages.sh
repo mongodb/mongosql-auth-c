@@ -29,7 +29,7 @@
             $build_dir\\mongosql_auth.dll
 
         # determine if this is 32 or 64-bit build.
-        if [ "windows-32" = "$VARIANT" ]; then        
+        if [ "windows-32" = "$VARIANT" ]; then
             arch="x86"
         else
             arch="x64"

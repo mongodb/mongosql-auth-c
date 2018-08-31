@@ -39,6 +39,14 @@ if [ "Linux" = "$platform" ]; then
     CMAKE_ARGS="$CMAKE_ARGS -DWITH_SSL=system"
 fi
 
+# icu variables
+ICU_DIR="$ARTIFACTS_DIR/icu"
+ICU_SRC_DIR="$ICU_DIR/icu/source"
+ICU_BUILD_DIR="$ICU_DIR/build"
+ENABLE_ICU='ON'
+CMAKE_ICU_ARGS="-DENABLE_ICU=$ENABLE_ICU -DICU_ROOT=$ICU_BUILD_DIR -DICU_INCLUDE_DIR=$ICU_SRC_DIR/common"
+CMAKE_ARGS="$CMAKE_ARGS $CMAKE_ICU_ARGS"
+
 if [ "Windows_NT" = "$OS" ]; then
     bison_path="/cygdrive/c/bison/bin"
     BUILD='MSBuild.exe MySQL.sln'
