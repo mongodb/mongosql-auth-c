@@ -1,9 +1,10 @@
 # mongosql-auth-c
 A MySQL authentication plugin that implements the client-side of MongoDB-supported authentication mechanisms for the BI Connector.
 
-Version 1.0 of this plugin supports the following mechanisms:
+Version 1.3 of this plugin supports the following mechanisms:
 
 - SCRAM-SHA-1
+- SCRAM-SHA-256
 - PLAIN
 - GSSAPI
 
@@ -49,7 +50,7 @@ Authentication parameters can be specified on the user name field.
 
 *Default: `SCRAM-SHA-1`*
 
-The authentication mechanism to use. Supported mechanisms are `PLAIN`, `SCRAM-SHA-1`, and `GSSAPI`.
+The authentication mechanism to use. Supported mechanisms are `PLAIN`, `SCRAM-SHA-1`, `SCRAM-SHA-256`, and `GSSAPI`.
 
 Example PLAIN authentication:
 ```
