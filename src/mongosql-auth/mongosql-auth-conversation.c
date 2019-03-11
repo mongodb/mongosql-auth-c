@@ -88,6 +88,7 @@ _mongosql_auth_conversation_init(mongosql_auth_conversation_t *conv,
             #endif
             free (service_name);
         }
+        mongosql_auth_log("    Target spn is: %s", target_spn);
         // Initialize the SASL struct.
         // 'err' is set to an allocated string if init does not succeed.
         ret = _mongosql_auth_sasl_init(&conv->mechanism.sasl,
