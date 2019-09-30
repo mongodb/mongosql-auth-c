@@ -193,7 +193,13 @@ download_and_extract ()
    EXTRACT=$2
 
    cd $ARTIFACTS_DIR
-   curl $MONGODB_DOWNLOAD_URL --silent --max-time 120 --fail --output mongodb-binaries.tgz
+   curl $MONGODB_DOWNLOAD_URL \
+        --output mongodb-binaries.tgz \
+        --silent \
+        --fail \
+        --max-time 60 \
+        --retry 5 \
+        --retry-delay 0
 
    $EXTRACT mongodb-binaries.tgz
 
