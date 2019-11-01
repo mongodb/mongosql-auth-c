@@ -35,9 +35,9 @@ export MONGO_ORCHESTRATION_HOME="$ARTIFACTS_DIR/orchestration"
 
 CMAKE_ARGS="-DWITH_BOOST=$FULL_BOOST_DIR_PATH"
 platform="$(uname)"
-if [ "Linux" = "$platform" ]; then
-    CMAKE_ARGS="$CMAKE_ARGS -DWITH_SSL=system"
-fi
+#if [ "Linux" = "$platform" ]; then
+CMAKE_ARGS="$CMAKE_ARGS -DWITH_SSL=system"
+#fi
 
 # icu variables
 ICU_DIR="$ARTIFACTS_DIR/icu"
