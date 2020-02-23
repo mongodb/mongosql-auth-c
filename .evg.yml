@@ -420,6 +420,17 @@ functions:
         optional: true
         aws_key: ${aws_key}
         aws_secret: ${aws_secret}
+        local_file: mongosql-auth-c/test/artifacts/build/mongosql_auth.dll
+        remote_file: mongosql-auth-c/artifacts/latest/${build_variant}/mongosql_auth.dll
+        content_type: application/octet-stream
+        bucket: mciuploads
+        permissions: public-read
+        display_name: "mongosql_auth.dll"
+    - command: s3.put
+      params:
+        optional: true
+        aws_key: ${aws_key}
+        aws_secret: ${aws_secret}
         local_file: mongosql-auth-c/test/artifacts/orchestration/server.log
         remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/orchestration-server.log
         content_type: text/plain
