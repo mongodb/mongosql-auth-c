@@ -40,14 +40,9 @@ buildvariants:
         remove_tasks: ["integration_tests_gssapi"]
 
 pre:
-  - command: shell.track
   - func: "fetch source"
   - func: "export variables"
   - func: "reset testing state"
-
-post:
-  - func: "upload artifacts"
-  - command: shell.cleanup
 
 tasks:
 
@@ -630,11 +625,6 @@ axes:
     variables:
       variant: rhel70
     run_on: rhel70
-  - id: osx
-    display_name: OSX 10.12
-    run_on: macos-1012
-    variables:
-      variant: macos
   - id: windows-64
     display_name: Windows 64 (VS2015)
     run_on: windows-64-vs2015-compile
