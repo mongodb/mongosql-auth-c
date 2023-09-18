@@ -25,7 +25,7 @@ buildvariants:
   tasks:
     - name: compile
     - name: sign
-      run_on: linux-64-amzn-build
+      run_on: ubuntu2204-large
     - name: unit_tests
     - name: integration_tests_plain
     - name: integration_tests_scram_sha_1
@@ -291,18 +291,19 @@ functions:
       params:
         silent: true
         script: |
-          echo "${signing_token_bi_connector}" > ${PROJECT_DIR}/signing_auth_token
+          docker login --username ${sql_engines_artifactory_username} --password ${sql_engines_artifactory_auth_token} ${release_tools_container_registry}
     - command: shell.exec
+      type: system
       params:
         working_dir: mongosql-auth-c/test/artifacts
         script: |
-          /usr/local/bin/notary-client.py \
-              --key-name "bi-connector" \
-              --auth-token-file ${PROJECT_DIR}/signing_auth_token \
-              --comment "Evergreen Automatic Signing (mongosql-auth-c) - ${version_id} - ${build_variant}" \
-              --notary-url http://notary-service.build.10gen.cc:5000 \
-              --skip-missing \
-              release.msi
+          docker run \
+            -e GRS_CONFIG_USER1_USERNAME=${authc_garasign_username} \
+            -e GRS_CONFIG_USER1_PASSWORD=${authc_garasign_password} \
+            --rm \
+            -v $(pwd):$(pwd) -w $(pwd) \
+            ${garasign_jsign_image} \
+            /bin/bash -c "jsign -a mongo-authenticode-2021 --replace --tsaurl http://timestamp.digicert.com -d SHA-256 release.msi"
 
   "start mongo-orchestration":
     - command: shell.exec
@@ -371,7 +372,7 @@ functions:
         optional: true
         aws_key: ${aws_key}
         aws_secret: ${aws_secret}
-        local_file: mongosql-auth-c/test/artifacts/release-signed.msi
+        local_file: mongosql-auth-c/test/artifacts/release.msi
         remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/mongosql-auth-${PUSH_NAME}-${PUSH_ARCH}-${CURRENT_VERSION}.msi
         content_type: application/x-msi
         bucket: mciuploads
@@ -598,7 +599,7 @@ functions:
         optional: true
         aws_key: ${aws_key}
         aws_secret: ${aws_secret}
-        local_file: mongosql-auth-c/test/artifacts/release-signed.msi
+        local_file: mongosql-auth-c/test/artifacts/release.msi
         remote_file: mongosql-auth-c/artifacts/${build_variant}/${task_id}/mongosql-auth-${PUSH_NAME}-${PUSH_ARCH}-${CURRENT_VERSION}.msi
         content_type: application/x-msi
         bucket: mciuploads
