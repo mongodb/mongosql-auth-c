@@ -91,12 +91,16 @@ tasks:
     - func: "start mongosqld"
       vars:
         var_auth_mechanism: SCRAM-SHA-1
+        var_username: "bob"
+        var_password: "pwd123"
     - func: "start mongo-orchestration"
     - func: "build icu"
     - func: "build mongosql_auth"
     - func: "run scram integration tests"
       vars:
         var_auth_mechanism: SCRAM-SHA-1
+        var_username: "bob"
+        var_password: "pwd123"
 
 - name: integration_tests_scram_sha_256
   exec_timeout_secs: 14400 # 4h
@@ -105,12 +109,16 @@ tasks:
     - func: "start mongosqld"
       vars:
         var_auth_mechanism: SCRAM-SHA-256
+        var_username: "bob256"
+        var_password: "pwd↔256"
     - func: "start mongo-orchestration"
     - func: "build icu"
     - func: "build mongosql_auth"
     - func: "run scram integration tests"
       vars:
         var_auth_mechanism: SCRAM-SHA-256
+        var_username: "bob256"
+        var_password: "pwd↔256"
 
 - name: integration_tests_gssapi
   exec_timeout_secs: 14400 # 4h
@@ -238,26 +246,28 @@ functions:
     - command: shell.exec
       type: test
       params:
+        silent: true
+        env:
+          PLAIN_USER: "${plain_auth_username}"
+          PLAIN_PASSWD: "${plain_auth_password}"
         script: |
           ${PREPARE_SHELL}
-          export PLAIN_USER=${plain_auth_username}
-          export PLAIN_PASSWD='${plain_auth_password}'
           ${SCRIPT_DIR}/run-integration-tests-plain.sh
 
   "run scram integration tests":
     - command: shell.exec
       type: test
       params:
+        silent: true
+        env:
+          USERNAME: "${var_username}"
+          PASSWORD: "${var_password}"
+          MECHANISM: "${var_auth_mechanism}"
+          MONGO_CLIENT_ARGS: "-u bob -p pwd123 --authenticationDatabase admin"
+          MONGO_OTHER_USER_ROLES: "[{role: 'root', db: 'admin'}]"
         script: |
           ${PREPARE_SHELL}
-          export USERNAME=bob
-          export PASSWORD=pwd123
           if test "${var_auth_mechanism}" = "SCRAM-SHA-256"; then
-            export USERNAME=bob256
-            export PASSWORD=pwd↔256
-            export MECHANISM="${var_auth_mechanism}"
-            export MONGO_CLIENT_ARGS="-u bob -p pwd123 --authenticationDatabase admin"
-            export MONGO_OTHER_USER_ROLES="[{role: 'root', db: 'admin'}]"
             ${SCRIPT_DIR}/create-user.sh
             export USERNAME=$USERNAME"?mechanism="$MECHANISM
           fi
@@ -267,12 +277,15 @@ functions:
     - command: shell.exec
       type: test
       params:
+        silent: true
+        env:
+          GSSAPI_USER: "${gssapi_auth_username}"
+          GSSAPI_PASSWD: "${gssapi_auth_password}"
+          GSSAPI_KEYTAB_B64: "${gssapi_auth_linux_keytab_base64}"
+          GSSAPI_KTNAME: "${PROJECT_DIR}/test/artifacts/gssapi/drivers.keytab"
         script: |
           ${PREPARE_SHELL}
-          export GSSAPI_USER=${gssapi_auth_username}
-          export GSSAPI_PASSWD='${gssapi_auth_password}'
-          export GSSAPI_KTNAME='${PROJECT_DIR}/test/artifacts/gssapi/drivers.keytab'
-          echo '${gssapi_auth_linux_keytab_base64}' > /tmp/drivers.keytab.base64
+          echo '$GSSAPI_KEYTAB_B64' > /tmp/drivers.keytab.base64
           mkdir -p $(dirname $GSSAPI_KTNAME)
           base64 --decode /tmp/drivers.keytab.base64 > $GSSAPI_KTNAME
           ${SCRIPT_DIR}/run-integration-tests-gssapi.sh
@@ -295,11 +308,15 @@ functions:
     - command: shell.exec
       type: system
       params:
+        silent: true
+        env:
+          GRS_CONFIG_USER1_USERNAME: "${authc_garasign_username}"
+          GRS_CONFIG_USER1_PASSWORD: "${authc_garasign_password}"
         working_dir: mongosql-auth-c/test/artifacts
         script: |
           docker run \
-            -e GRS_CONFIG_USER1_USERNAME=${authc_garasign_username} \
-            -e GRS_CONFIG_USER1_PASSWORD=${authc_garasign_password} \
+            -e GRS_CONFIG_USER1_USERNAME \
+            -e GRS_CONFIG_USER1_PASSWORD \
             --rm \
             -v $(pwd):$(pwd) -w $(pwd) \
             ${garasign_jsign_image} \
@@ -316,19 +333,22 @@ functions:
     - command: shell.exec
       type: test
       params:
+        silent: true
+        env:
+          EVG_USER: "${evg_user}"
+          EVG_KEY: "${evg_key}"
+          AWS_ACCESS_KEY_ID: "${aws_key}"
+          AWS_SECRET_ACCESS_KEY: "${aws_secret}"
+          MONGO_USERNAME: "${admin_username}"
+          MONGO_PASSWORD: "${admin_password}"
         script: |
           ${PREPARE_SHELL}
-          export EVG_USER=${evg_user}
-          export EVG_KEY=${evg_key}
-          export AWS_ACCESS_KEY_ID=${aws_key}
-          export AWS_SECRET_ACCESS_KEY=${aws_secret}
           # the SCRAM tests use mongo orchestration
           if test "${var_auth_mechanism}" = "SCRAM-SHA-1" || test "${var_auth_mechanism}" = "SCRAM-SHA-256"; then
-            export MONGO_USERNAME=bob
-            export MONGO_PASSWORD=pwd123
-          else
-            export MONGO_USERNAME="${admin_username}"
-            export MONGO_PASSWORD="${admin_password}"
+            set +x
+            export MONGO_USERNAME=${var_username}
+            export MONGO_PASSWORD=${var_password}
+            set -x
           fi
           export MONGO_URI=${var_mongodb_uri|--mongo-uri=127.0.0.1}
           ${SCRIPT_DIR}/start-mongosqld.sh
