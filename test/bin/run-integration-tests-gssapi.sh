@@ -40,7 +40,7 @@ test_connect() {
     if [ ! -d $MONGOSQLD_DIR ]; then
         echo "cloning mongosqld repo"
         mkdir -p $MONGOSQLD_DIR
-        git clone git@github.com:10gen/sqlproxy.git ${MONGOSQLD_DIR}
+        git clone https://github.com/10gen/sqlproxy.git ${MONGOSQLD_DIR}
     fi
     cd $MONGOSQLD_DIR
     git fetch
