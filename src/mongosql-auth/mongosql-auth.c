@@ -81,12 +81,19 @@ _mongosql_auth_start(mongosql_auth_t *plugin,
     uint8_t major_version;
     uint8_t minor_version;
     char *mechanism;
+    size_t mechanism_len;
 
     /* read auth-data */
     mongosql_auth_log("%s", "Reading auth-data from server");
     pkt_len = plugin->vio->read_packet(plugin->vio, &pkt);
     if (pkt_len < 0) {
         _mongosql_auth_set_error(plugin, "failed reading auth-data from initial handshake");
+        return;
+    }
+
+    /* check if we have at least 2 bytes for version numbers */
+    if (pkt_len < 2) {
+        _mongosql_auth_set_error(plugin, "auth-data packet too small: expected at least 2 bytes for version");
         return;
     }
 
@@ -119,9 +126,34 @@ _mongosql_auth_start(mongosql_auth_t *plugin,
         return;
     }
 
+    /*
+     * The packet should contain a null-terminated mechanism string followed by
+     * a 4-byte num_conversations field. We need to:
+     * 1. Find the null terminator (ensuring it exists within bounds)
+     * 2. Verify there are 4 bytes after the null terminator for num_conversations
+     */
     mechanism = (char*) pkt;
+    mechanism_len = 0;
+
+    /* find the null terminator within the packet bounds */
+    while (mechanism_len < (size_t)pkt_len && pkt[mechanism_len] != '\0') {
+        mechanism_len++;
+    }
+
+    /* check if we found a null terminator */
+    if (mechanism_len >= (size_t)pkt_len) {
+        _mongosql_auth_set_error(plugin, "auth-more-data packet malformed: mechanism string not null-terminated");
+        return;
+    }
+
+    /* check if we have 4 bytes after the null terminator for num_conversations */
+    if (mechanism_len + 1 + 4 > (size_t)pkt_len) {
+        _mongosql_auth_set_error(plugin, "auth-more-data packet too small: insufficient data for num_conversations");
+        return;
+    }
+
     /* set the plugin's num_conversations field */
-    memcpy(&plugin->num_conversations, pkt+strlen(mechanism)+1, 4);
+    memcpy(&plugin->num_conversations, pkt+mechanism_len+1, 4);
     mongosql_auth_log("    mechanism: %s", mechanism);
     mongosql_auth_log("    num_conversations: %u", plugin->num_conversations);
 
@@ -158,6 +190,7 @@ _mongosql_auth_read_payload(mongosql_auth_t *plugin) {
     unsigned char *pkt;
     int pkt_len;
     mongosql_auth_conversation_t *conv;
+    size_t bytes_consumed = 0;
 
     /* if we are done, we don't read another server payload */
     if (_mongosql_auth_is_done(plugin)) {
@@ -173,15 +206,35 @@ _mongosql_auth_read_payload(mongosql_auth_t *plugin) {
         return;
     }
 
+    /* check if packet is large enough to contain at least one length field */
+    if (pkt_len < 4) {
+        _mongosql_auth_set_error(plugin, "received payload too small: expected at least 4 bytes");
+        return;
+    }
+
     /* take the server reply and populate each conversation's buffer */
     for(unsigned int i=0; i<plugin->num_conversations; i++) {
         conv = &plugin->conversations[i];
+
+        /* check if we have at least 4 bytes remaining for the length field */
+        if (bytes_consumed + 4 > (size_t)pkt_len) {
+            _mongosql_auth_set_error(plugin, "received payload too small: insufficient data for length field");
+            return;
+        }
+
         memcpy(&conv->buf_len, pkt, 4);
         mongosql_auth_log("received %zu bytes from server", conv->buf_len);
         if (conv->buf_len > MONGOSQL_AUTH_MAX_BUF_SIZE) {
             _mongosql_auth_set_error(plugin, "received data size too large");
             return;
         }
+
+        /* check if we have enough bytes remaining for the actual data */
+        if (bytes_consumed + 4 + conv->buf_len > (size_t)pkt_len) {
+            _mongosql_auth_set_error(plugin, "received payload too small: insufficient data for conversation buffer");
+            return;
+        }
+
         // This buffer will be the responsibility of its receiver to free.
         conv->buf = realloc(conv->buf, conv->buf_len);
         if (conv->buf == NULL) {
@@ -192,6 +245,9 @@ _mongosql_auth_read_payload(mongosql_auth_t *plugin) {
         pkt += 4;
         memcpy(conv->buf, pkt, conv->buf_len);
         pkt += conv->buf_len;
+
+        /* update bytes consumed */
+        bytes_consumed += 4 + conv->buf_len;
     }
 }
 
