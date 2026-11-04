@@ -1,4 +1,20 @@
 # mongosql-auth-c
+
+## Project status: End of life
+The MongoDB Connector for Business Intelligence (BI Connector) is no longer supported. As of
+September 2026, the BI Connector for Atlas and on-premises reached end of life. No further releases,
+bug fixes, feature updates, or security updates are planned. To connect to Atlas or Enterprise
+Advanced deployments with SQL, use the
+[MongoDB SQL Interface](https://www.mongodb.com/docs/sql-interface/). For migration guidance, see
+[Transition from BI Connector to SQL Interface](https://www.mongodb.com/docs/sql-interface/transition-bic-to-atlas-sql/).
+Use of this software is at your own risk. It is not recommended for new deployments, and anyone
+continuing to use it — especially in production — should carefully assess the risks and plan a
+migration to the SQL Interface.
+
+See [SECURITY.md](SECURITY.md) for information about the project's security-support status.
+
+---
+
 A MySQL authentication plugin that implements the client-side of MongoDB-supported authentication mechanisms for the BI Connector.
 
 Version 1.3 of this plugin supports the following mechanisms:
